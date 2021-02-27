@@ -15,7 +15,8 @@ public class SaveManager : MonoBehaviour {
 	public Text saveText;
 	public Item[] allItems;
 	public Resource[] allResources;
-	[SerializeField] GameObject smallIslandPrefab;
+	[SerializeField] private GameObject smallIslandPrefab;
+	[SerializeField] private GameObject smallDarkIslandPrefab;
 
 	Inventory inventory;
 	PlayerController player;
@@ -123,27 +124,42 @@ public class SaveManager : MonoBehaviour {
 			for(int i = 0; i < save.worldItemIDs.Count; i++) {
 				foreach(Item item in allItems) {
 					if(item.id == save.worldItemIDs[i]) {
+						//GameObject itemObj = Instantiate(item.prefab, save.worldItemPositions[i], save.worldItemRotations[i]) as GameObject;
 						GameObject itemObj = Instantiate(item.prefab, save.worldItemPositions[i], save.worldItemRotations[i]) as GameObject;
-						if(!save.worldItemHasRigidbodies[i]) {
+						if (!save.worldItemHasRigidbodies[i]) {
 							Rigidbody itemRB = itemObj.GetComponentInParent<Rigidbody>();
 							if(itemRB) {
 								Destroy(itemRB);
 							}
 						}
-						Furnace furnace = itemObj.GetComponent<Furnace>();
+						ItemHandler handler = itemObj.GetComponent<ItemHandler>();
 						AutoMiner autoMiner = itemObj.GetComponent<AutoMiner>();
 						AutoSorter autoSorter = itemObj.GetComponent<AutoSorter>();
-						ConveyorBelt conveyerBelt = itemObj.GetComponent<ConveyorBelt>();
 						Radio radio = itemObj.GetComponent<Radio>();
 						LightItem li = itemObj.GetComponent<LightItem>();
-						if(furnace) {
+						if(handler.item.type == Item.ItemType.Structure && handler.item.subType == Item.ItemSubType.Furnace) {
+							Furnace furnace = itemObj.GetComponent<Furnace>();
 							furnace.fuel = save.itemSaveData[i].fuel;
 							if(save.itemSaveData[i].itemID != -1) {
-								furnace.currentSmeltingItem = FindItem(save.itemSaveData[i].itemID);
-								furnace.finishTime = furnace.smeltTime + Time.time;
+								foreach (int furnaceItem in save.itemSaveData[i].itemIDs) {
+									furnace.currentSmeltingItem.Add(ItemIDToItem(furnaceItem)); //this could get VERY inefficient.
+									furnace.finishTime = furnace.smeltTime + Time.time;
+								}
 							}
 						}
-						if(autoMiner) {
+						if (handler.item.type == Item.ItemType.Structure && handler.item.subType == Item.ItemSubType.Storage) //This is only temporary for the current storage solution!!
+						{
+							ItemHolder holder = handler.GetComponent<ItemHolder>();
+							if (save.itemSaveData[i].itemAmount > 0)
+							{
+								holder.LoadValues(save.itemSaveData[i].itemAmount, ItemIDToItem(save.itemSaveData[i].itemID));
+							}
+							else
+							{
+								holder.LoadNullValues();
+							}
+						}
+						if (autoMiner) {
 							autoMiner.items = IDsToItems(save.itemSaveData[i].itemIDs);
 							autoMiner.itemAmounts = save.itemSaveData[i].itemAmounts;
 							if(save.itemSaveData[i].itemID != -1) {
@@ -155,7 +171,8 @@ public class SaveManager : MonoBehaviour {
 								autoSorter.SetItem(FindItem(save.itemSaveData[i].itemID));
 							}
 						}
-						if(conveyerBelt) {
+						if(handler.item.type == Item.ItemType.Structure && handler.item.subType == Item.ItemSubType.Conveyor) {
+							ConveyorBelt conveyerBelt = itemObj.GetComponent<ConveyorBelt>();
 							conveyerBelt.SetSpeed(save.itemSaveData[i].num);
 						}
 						if(radio) {
@@ -198,6 +215,10 @@ public class SaveManager : MonoBehaviour {
 			foreach(Vector3 pos in save.smallIslandPositions) {
 				Instantiate(smallIslandPrefab, pos, smallIslandPrefab.transform.rotation);
 			}
+			foreach (Vector3 pos in save.smallDarkIslandPositions)
+            {
+				Instantiate(smallDarkIslandPrefab, pos, smallDarkIslandPrefab.transform.rotation);
+            }
 
 			player.transform.position = save.playerPosition;
 			player.transform.rotation = save.playerRotation;
@@ -279,22 +300,39 @@ public class SaveManager : MonoBehaviour {
 			if(!usedItemHandlers.Contains(handler)) {
 				save.worldItemIDs.Add(handler.item.id);
 				// Saving Item Data
-				ItemSaveData itemSaveData = new ItemSaveData();
-				Furnace furnace = handler.GetComponent<Furnace>(); // Better way to do this would be to check item ids.
+				ItemSaveData itemSaveData = new ItemSaveData(); // Better way to do this would be to check item ids. //Micro here: it would be better but not that much better
 				AutoMiner autoMiner = handler.GetComponent<AutoMiner>();
 				AutoSorter autoSorter = handler.GetComponent<AutoSorter>();
-				ConveyorBelt conveyerBelt = handler.GetComponent<ConveyorBelt>();
 				Radio radio = handler.GetComponent<Radio>();
 				LightItem li = handler.GetComponent<LightItem>();
-				if(furnace) {
+
+				if(handler.item.type == Item.ItemType.Structure && handler.item.subType == Item.ItemSubType.Furnace) { //furnaces
+					Furnace furnace = handler.GetComponent<Furnace>();
 					itemSaveData.fuel = furnace.fuel;
-					if(furnace.currentSmeltingItem) {
-						itemSaveData.itemID = furnace.currentSmeltingItem.id;
+					if(furnace.currentSmeltingItem.Count > 0) {
+						foreach (Item fItem in furnace.currentSmeltingItem) {
+							itemSaveData.itemIDs.Add(fItem.id);
+						}
 					} else {
 						itemSaveData.itemID = -1;
 					}
 				}
-				if(autoMiner) {
+				if (handler.item.type == Item.ItemType.Structure && handler.item.subType == Item.ItemSubType.Storage) //This is only temporary for the current storage solution!!
+				{ 
+					ItemHolder holder = handler.GetComponent<ItemHolder>();
+					if (holder.ItemStack() > 0)
+					{
+						itemSaveData.itemID = holder.GetItem().id;
+						itemSaveData.itemAmount = holder.ItemStack();
+					}
+					else
+					{
+						itemSaveData.itemID = -1;
+						itemSaveData.itemAmount = 0;
+					}
+				}
+
+				if (autoMiner) {
 					itemSaveData.itemIDs = ItemsToIDs(autoMiner.items);
 					itemSaveData.itemAmounts = autoMiner.itemAmounts;
 					if(autoMiner.currentToolItem) {
@@ -310,7 +348,8 @@ public class SaveManager : MonoBehaviour {
 						itemSaveData.itemID = -1;
 					}
 				}
-				if(conveyerBelt) {
+				if(handler.item.type == Item.ItemType.Structure && handler.item.subType == Item.ItemSubType.Conveyor) { //conveyors
+					ConveyorBelt conveyerBelt = handler.GetComponent<ConveyorBelt>();
 					itemSaveData.num = conveyerBelt.speedNum;
 				}
 				if(radio) {
@@ -362,7 +401,13 @@ public class SaveManager : MonoBehaviour {
 		save.achievementIDs = achievementManager.ObtainedAchievements();
 
 		foreach(SmallIsland si in FindObjectsOfType<SmallIsland>()) {
-			save.smallIslandPositions.Add(si.transform.position);
+			if (si.islandType == SmallIsland.IslandType.Light)
+			{
+				save.smallIslandPositions.Add(si.transform.position);
+			} else if (si.islandType == SmallIsland.IslandType.Dark)
+            {
+				save.smallDarkIslandPositions.Add(si.transform.position);
+			}
 		}
 
 		save.difficulty = difficulty;
@@ -391,7 +436,21 @@ public class SaveManager : MonoBehaviour {
 		}
 	}
 
+	public Item ItemIDToItem (int ID)
+    {
+		Item returnedItem = new Item();
+		for (int i = 0; i < allItems.Length; i++)
+        {
+			if (allItems[i].id == ID)
+            {
+				returnedItem = allItems[i];
+            }
+        }
+		return returnedItem;
+    }
+
 }
+
 
 [System.Serializable]
 public struct SerializableVector3 {

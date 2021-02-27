@@ -14,19 +14,22 @@ public class ArtificialInertia : MonoBehaviour {
 
 	void OnCollisionEnter(Collision col) {
 		//CustomTags customTags = col.gameObject.GetComponent<CustomTags>();
-		if(root.parent != col.transform && col.gameObject.name == "SmallIsland(Clone)") {
+		if(root.parent != col.transform && col.gameObject.GetComponent<ArtificialInertiaBody>()) {
 			root.SetParent(col.transform);
 		}
 	}
 
-	void OnCollisionStay(Collision col) {
+	/*void OnCollisionStay(Collision col) {
 		//CustomTags customTags = col.gameObject.GetComponent<CustomTags>();
 		if(root.parent != col.transform && col.gameObject.name == "SmallIsland(Clone)") {
 			root.SetParent(col.transform);
 		}
-	}
+	} */
 
 	void OnCollisionExit(Collision col) {
-		root.SetParent(null);
+		if (col.transform != root)
+		{
+			root.SetParent(null);
+		}
 	}
 }

@@ -15,6 +15,7 @@ MonoBehaviour:
   itemName: Furnace
   itemDescription: Smelt items
   type: 2
+  subType: 1
   id: 6
   icon: {fileID: 21300000, guid: 49c74c6ec6f6aa947b7592bcfc673add, type: 3}
   prefab: {fileID: 1039647288645722, guid: 09ffc11aa8e95f14189efd5d1b7ac51f, type: 3}
@@ -26,6 +27,7 @@ MonoBehaviour:
     type: 3}
   speed: 0
   gatherAmount: 0
+  toolToughness: 0
   power: 0
   fuel: 0
   smeltItem: {fileID: 0}

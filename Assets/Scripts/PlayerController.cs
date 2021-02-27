@@ -7,7 +7,8 @@ using UnityEngine.AI;
 using UnityEngine.PostProcessing;
 using EZCameraShake;
 
-public class PlayerController : MonoBehaviour {
+public class PlayerController : MonoBehaviour
+{
 
 	public WorldManager.WorldType currentWorld;
 
@@ -104,7 +105,7 @@ public class PlayerController : MonoBehaviour {
 	Color defaultPlayerCameraColor;
 
 	float nextTimeToRespawn;
-	float respawnTime = 15f;
+	float respawnTime = 7.5f;
 
 	[HideInInspector] public bool dead = false;
 
@@ -135,6 +136,10 @@ public class PlayerController : MonoBehaviour {
 	float flyDoubleTapCooldown;
 	bool flying;
 
+	float interactKeyHeldDelay = 0.6f; // time until "F" / interact key can be held to put in lots of items / interact alot.
+	float interactKeyHeldTime; //when time is over this value, if f key is held, constantly try to add an item.
+	bool interactKeyPressed;
+
 	WeaponHandler currentWeaponHandler;
 	Animator currentWeaponAnimator;
 
@@ -148,7 +153,8 @@ public class PlayerController : MonoBehaviour {
 
 	PersistentData persistentData;
 
-	void Awake() {
+	void Awake()
+	{
 		GameObject scriptHolder = GameObject.FindGameObjectWithTag("ScriptHolder");
 		audioManager = scriptHolder.GetComponent<AudioManager>();
 		pauseManager = scriptHolder.GetComponent<PauseManager>();
@@ -166,7 +172,8 @@ public class PlayerController : MonoBehaviour {
 		defaultPlayerCameraColor = playerCamera.GetComponent<Camera>().backgroundColor;
 	}
 
-	void Start() {
+	void Start()
+	{
 		health = maxHealth;
 		hunger = maxHunger;
 		Cursor.lockState = CursorLockMode.Locked;
@@ -179,95 +186,130 @@ public class PlayerController : MonoBehaviour {
 		difficulty = FindObjectOfType<SaveManager>().difficulty;
 
 		persistentData = FindObjectOfType<PersistentData>();
-		if(!dead && !persistentData.loadSave) {
+		if (!dead && !persistentData.loadSave)
+		{
 			currentWorld = WorldManager.WorldType.Light;
 			EnterLightWorld();
 		}
 	}
 
-	public void InventoryUpdate() {
-		if(inventory.currentSelectedItem) {
-			if(currentHandObj) {
+	public void InventoryUpdate()
+	{
+		if (inventory.currentSelectedItem)
+		{
+			if (currentHandObj)
+			{
 				Destroy(currentHandObj);
 			}
 			GameObject obj = Instantiate(inventory.currentSelectedItem.prefab, handContainer.transform) as GameObject;
 			obj.transform.Rotate(inventory.currentSelectedItem.handRotation);
 			obj.transform.localScale = inventory.currentSelectedItem.handScale;
 			Rigidbody objRB = obj.GetComponent<Rigidbody>();
-			if(objRB) {
+			if (objRB)
+			{
 				objRB.isKinematic = true;
 			}
 			Collider[] cols = obj.GetComponentsInChildren<Collider>();
-			if(cols.Length > 0) {
-				foreach(Collider col in cols) {
+			if (cols.Length > 0)
+			{
+				foreach (Collider col in cols)
+				{
 					col.enabled = false;
 				}
 			}
 			AudioSource[] audioSources = obj.GetComponentsInChildren<AudioSource>();
-			if(audioSources.Length > 0) {
-				foreach(AudioSource audio in audioSources) {
+			if (audioSources.Length > 0)
+			{
+				foreach (AudioSource audio in audioSources)
+				{
 					audio.enabled = false;
 				}
 			}
-			if(inventory.currentSelectedItem.id == 23) { // AutoMiner
+			if (inventory.currentSelectedItem.id == 23)
+			{ // AutoMiner
 				obj.GetComponent<AutoMiner>().enabled = false;
 				obj.GetComponent<NavMeshAgent>().enabled = false;
-			} else if(inventory.currentSelectedItem.id == 32 || inventory.currentSelectedItem.id == 33) { // Bucket or WaterBucket
+			}
+			else if (inventory.currentSelectedItem.id == 32 || inventory.currentSelectedItem.id == 33)
+			{ // Bucket or WaterBucket
 				Bucket bucket = obj.GetComponent<Bucket>();
-				if(bucket) {
+				if (bucket)
+				{
 					bucket.enabled = false;
 				}
-			} else if(inventory.currentSelectedItem.id == 20) { // Lightning Stone
+			}
+			else if (inventory.currentSelectedItem.id == 20)
+			{ // Lightning Stone
 				LightningStone ls = obj.GetComponent<LightningStone>();
-				if(ls) {
+				if (ls)
+				{
 					ls.enabled = false;
 				}
-			} else if(inventory.currentSelectedItem.id == 35) {
+			}
+			else if (inventory.currentSelectedItem.id == 35)
+			{
 				LightItem li = obj.GetComponent<LightItem>();
-				if(li) {
+				if (li)
+				{
 					li.enabled = false;
 				}
 			}
 			obj.tag = "Untagged";
-			foreach(Transform trans in obj.transform) {
+			foreach (Transform trans in obj.transform)
+			{
 				trans.tag = "Untagged";
 			}
 
 			currentHandObj = obj;
 
-			if(inventory.currentSelectedItem.type == Item.ItemType.Weapon) {
+			if (inventory.currentSelectedItem.type == Item.ItemType.Weapon)
+			{
 				currentWeaponHandler = currentHandObj.GetComponent<WeaponHandler>();
 				currentWeaponAnimator = currentHandObj.GetComponent<Animator>();
-			} else {
+			}
+			else
+			{
 				currentWeaponHandler = null;
 				currentWeaponAnimator = null;
 			}
 
-		} else if(currentHandObj) {
+		}
+		else if (currentHandObj)
+		{
 			Destroy(currentHandObj);
 			currentHandObj = null;
 			currentWeaponHandler = null;
 		}
 	}
 
-	void Update() {
-		if(!dead && mode != 1) {
+	void Update()
+	{
+		ManageBuildingInteractKey();
+
+		if (!dead && mode != 1)
+		{
 			LoseCalories(Time.deltaTime * hungerLoss);
-			if(hunger <= 10f) {
+			if (hunger <= 10f)
+			{
 				TakeEffectDamage(Time.deltaTime * hungerDamage);
-				if(!infoText.activeSelf) {
+				if (!infoText.activeSelf)
+				{
 					infoText.SetActive(true);
 				}
-			} else if(infoText.activeSelf) {
+			}
+			else if (infoText.activeSelf)
+			{
 				infoText.SetActive(false);
 			}
 		}
 
-		if(hunger >= fullLevel) {
+		if (hunger >= fullLevel)
+		{
 			GainHealth(Time.deltaTime * fullHealthRegainAmount);
 		}
 
-		if(!lockLook) {
+		if (!lockLook)
+		{
 			transform.Rotate(Vector3.up * Input.GetAxisRaw("Mouse X") * mouseSensitivityX);
 			verticalLookRotation += Input.GetAxisRaw("Mouse Y") * mouseSensitivityY;
 			verticalLookRotation = Mathf.Clamp(verticalLookRotation, -90, 90);
@@ -276,34 +318,49 @@ public class PlayerController : MonoBehaviour {
 
 		Vector3 moveDir = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized;
 
-		if(Input.GetButton("Sprint")) {
+		if (Input.GetButton("Sprint"))
+		{
 			currentMoveSpeed = runSpeed;
-		} else {
+		}
+		else
+		{
 			currentMoveSpeed = walkSpeed;
 		}
 
-		if(Input.GetButtonDown("Jump")) {
-			if(mode == 1) {
-				if(flyDoubleTapCooldown > 0f) {
-					if(flying) {
+		if (Input.GetButtonDown("Jump"))
+		{
+			if (mode == 1)
+			{
+				if (flyDoubleTapCooldown > 0f)
+				{
+					if (flying)
+					{
 						StopFlying();
-					} else {
+					}
+					else
+					{
 						StartFlying();
 					}
-				} else {
+				}
+				else
+				{
 					flyDoubleTapCooldown = 0.5f;
 				}
 			}
-			if(grounded && !flying) {
+			if (grounded && !flying)
+			{
 				rb.AddForce(transform.up * jumpForce);
 			}
 		}
-		
-		if(flying) { // In future make axis!
-			if(Input.GetButton("Jump")) {
+
+		if (flying)
+		{ // In future make axis!
+			if (Input.GetButton("Jump"))
+			{
 				moveDir.y = 1;
 			}
-			if(Input.GetButton("Crouch")) {
+			if (Input.GetButton("Crouch"))
+			{
 				moveDir.y = -1;
 			}
 		}
@@ -314,12 +371,17 @@ public class PlayerController : MonoBehaviour {
 
 		flyDoubleTapCooldown -= Time.deltaTime;
 
-		if(Input.GetKey(KeyCode.C)) {
-			if(canvas.activeSelf) {
+		if (Input.GetKey(KeyCode.C))
+		{
+			if (canvas.activeSelf)
+			{
 				canvas.SetActive(false);
 			}
-		} else {
-			if(!canvas.activeSelf) {
+		}
+		else
+		{
+			if (!canvas.activeSelf)
+			{
 				canvas.SetActive(true);
 			}
 		}
@@ -334,64 +396,88 @@ public class PlayerController : MonoBehaviour {
 		bool hideNoticeText = false;
 		string noticeText = string.Empty;
 
-		if(!ActiveMenu()) {
-			if(currentWeaponHandler && currentWeaponHandler.weapon.type == Weapon.WeaponType.Bow) {
-				if(!firing) {
+		if (!ActiveMenu())
+		{
+			if (currentWeaponHandler && currentWeaponHandler.weapon.type == Weapon.WeaponType.Bow)
+			{
+				if (!firing)
+				{
 					firing = true;
 					currentWeaponAnimator.SetBool("PullingBack", true);
 				}
-				if(Input.GetMouseButton(2) || Input.GetAxisRaw("ControllerTriggers") >= 0.1f) {
-					if(drawTime < currentWeaponHandler.weapon.chargeTime) {
+				if (Input.GetMouseButton(2) || Input.GetAxisRaw("ControllerTriggers") >= 0.1f)
+				{
+					if (drawTime < currentWeaponHandler.weapon.chargeTime)
+					{
 						drawTime++;
 					}
 				}
-			} else if(firing) {
+			}
+			else if (firing)
+			{
 				firing = false;
 				currentWeaponAnimator.SetTrigger("Fire");
 				currentWeaponAnimator.SetBool("PullingBack", false);
 			}
 
-			if(hit.collider) {
+			if (hit.collider)
+			{
 				target = hit.collider.gameObject;
 				targetHit = hit;
 
-				if(Input.GetMouseButtonDown(0) || Input.GetAxisRaw("ControllerTriggers") <= -0.1f) {
-					if(hit.collider.CompareTag("Resource")) {
-						if(distanceToTarget >= interactRange) {
+				if (Input.GetMouseButtonDown(0) || Input.GetAxisRaw("ControllerTriggers") <= -0.1f)
+				{
+					if (hit.collider.CompareTag("Resource"))
+					{
+						if (distanceToTarget >= interactRange)
+						{
 							Attack();
 						}
-					} else {
+					}
+					else
+					{
 						Attack();
 					}
 				}
 
-				if(target.CompareTag("Item") && distanceToTarget <= interactRange && !inventory.placingStructure) {
+				if (target.CompareTag("Item") && distanceToTarget <= interactRange && !inventory.placingStructure)
+				{
 					AutoMiner autoMiner = null;
 					ItemHandler itemHandler = target.GetComponentInParent<ItemHandler>();
-					if(itemHandler.item.id == 12) { // Is it a crate?
+					if (itemHandler.item.id == 12)
+					{ // Is it a crate?
 						noticeText = "Hold [E] to pick up, [F] to open";
-						if(Input.GetButton("Interact")) {
+						if (Input.GetButton("Interact"))
+						{
 							itemHandler.GetComponent<LootContainer>().Open();
 							achievementManager.GetAchievement(7); // Looter Achievement
 						}
-					} else if(itemHandler.item.id == 23) { // Auto Miner
+					}
+					else if (itemHandler.item.id == 23)
+					{ // Auto Miner
 
 						autoMiner = itemHandler.GetComponent<AutoMiner>();
 
-						if(inventory.currentSelectedItem && inventory.currentSelectedItem.type == Item.ItemType.Tool) {
+						if (inventory.currentSelectedItem && inventory.currentSelectedItem.type == Item.ItemType.Tool)
+						{
 							noticeText = "Hold [E] to pick up, [F] to replace tool";
 
-							if(Input.GetButton("Interact")) {
+							if (Input.GetButton("Interact"))
+							{
 								autoMiner.SetTool(inventory.currentSelectedItem);
 								inventory.hotbar.GetChild(inventory.selectedHotbarSlot).GetComponent<InventorySlot>().DecreaseItem(1);
 								inventory.InventoryUpdate();
 							}
 
-						} else {
+						}
+						else
+						{
 							noticeText = "Hold [E] to pick up, [F] to gather items";
-							if(Input.GetButton("Interact")) {
+							if (Input.GetButton("Interact"))
+							{
 								int i = 0;
-								foreach(Item item in autoMiner.items) {
+								foreach (Item item in autoMiner.items)
+								{
 									inventory.AddItem(item, autoMiner.itemAmounts[i]);
 									i++;
 								}
@@ -401,86 +487,186 @@ public class PlayerController : MonoBehaviour {
 								autoMiner.ClearItems();
 							}
 						}
-					} else if(itemHandler.item.id == 24) { // Door
+					}
+					else if (itemHandler.item.id == 24)
+					{ // Door
 						Door door = itemHandler.GetComponent<Door>();
-						if(door.open) {
+						if (door.open)
+						{
 							noticeText = "Hold [E] to pick up, [F] to close door";
-						} else {
+						}
+						else
+						{
 							noticeText = "Hold [E] to pick up, [F] to open door";
 						}
-						if(Input.GetButtonDown("Interact")) {
+						if (Input.GetButtonDown("Interact"))
+						{
 							door.ToggleOpen();
 						}
-					} else if(itemHandler.item.id == 25) { // Conveyor belt
+					}
+					else if (itemHandler.item.id == 25)
+					{ // Conveyor belt
 						ConveyorBelt conveyor = itemHandler.GetComponent<ConveyorBelt>();
 						noticeText = "Hold [E] to pick up, [F] to change speed. Current speed is " + conveyor.speeds[conveyor.speedNum];
-						if(Input.GetButtonDown("Interact")) {
+						if (Input.GetButtonDown("Interact"))
+						{
 							conveyor.IncreaseSpeed();
 						}
-					} else if(itemHandler.item.id == 27) { // Auto Sorter
+					}
+					else if (itemHandler.item.id == 27)
+					{ // Auto Sorter
 						AutoSorter sorter = itemHandler.GetComponent<AutoSorter>();
-						if(inventory.currentSelectedItem) {
+						if (inventory.currentSelectedItem)
+						{
 							noticeText = "Hold [E] to pick up, [F] set sorting item";
-							if(Input.GetButtonDown("Interact")) {
+							if (Input.GetButtonDown("Interact"))
+							{
 								sorter.SetItem(inventory.currentSelectedItem);
 							}
-						} else {
+						}
+						else
+						{
 							noticeText = "Hold [E] to pick up";
 						}
-					} else if(itemHandler.item.id == 30) { // Radio
+					}
+					else if (itemHandler.item.id == 30)
+					{ // Radio
 						Radio radio = itemHandler.GetComponent<Radio>();
-						if(radio.songNum == -1) {
+						if (radio.songNum == -1)
+						{
 							noticeText = "Hold [E] to pick up, [F] to turn on";
-						} else if(radio.songNum == radio.songs.Length - 1) {
+						}
+						else if (radio.songNum == radio.songs.Length - 1)
+						{
 							noticeText = "Hold [E] to pick up, [F] to turn off. Currently playing " + radio.songs[radio.songNum].name;
-						} else {
+						}
+						else
+						{
 							noticeText = "Hold [E] to pick up, [F] to change song. Currently playing " + radio.songs[radio.songNum].name;
 						}
-						if(Input.GetButtonDown("Interact")) {
+						if (Input.GetButtonDown("Interact"))
+						{
 							radio.ChangeSong();
 							achievementManager.GetAchievement(11); // Groovy achievement
 						}
-					} else if(itemHandler.item.id == 35) { // Light
+					}
+					else if (itemHandler.item.id == 35)
+					{ // Light
 						LightItem li = itemHandler.GetComponent<LightItem>();
-						if(li.intensities[li.intensityNum] == 0) {
+						if (li.intensities[li.intensityNum] == 0)
+						{
 							noticeText = "Hold [E] to pick up, [F] to turn on";
-						} else if(li.intensityNum == li.intensities.Length - 1) {
+						}
+						else if (li.intensityNum == li.intensities.Length - 1)
+						{
 							noticeText = "Hold [E] to pick up, [F] to turn off. Current brightness is " + li.intensities[li.intensityNum];
-						} else {
+						}
+						else
+						{
 							noticeText = "Hold [E] to pick up, [F] to change brightness. Current brightness is " + li.intensities[li.intensityNum];
 						}
-						if(Input.GetButtonDown("Interact")) {
+						if (Input.GetButtonDown("Interact"))
+						{
 							li.IncreaseIntensity();
 						}
-					} else {
+					} else if (itemHandler.item.type == Item.ItemType.Structure && itemHandler.item.subType == Item.ItemSubType.Furnace) //furnace
+                    {
+						noticeText = "Hold [E] to pick up, [F] to add fuel / ore";
+						if (interactKeyPressed)
+						{
+							Furnace furnace = itemHandler.GetComponent<Furnace>();
+							if (inventory.slots[inventory.selectedHotbarSlot].currentItem)
+							{
+								if (inventory.slots[inventory.selectedHotbarSlot].currentItem.fuel > 0 || inventory.slots[inventory.selectedHotbarSlot].currentItem.smeltItem)
+								{
+									inventory.TakeHeldItem(out Item thisItem, out int stackTaken, 1);
+									furnace.AddItem(thisItem, stackTaken);
+								}
+							}
+						}
+					}
+					else if (itemHandler.item.type == Item.ItemType.Structure && itemHandler.item.subType == Item.ItemSubType.Storage)
+					{
+						bool currentItemExists = false;
+						if (inventory.slots[inventory.selectedHotbarSlot].currentItem)
+						{
+							currentItemExists = true;
+						}
+						if (currentItemExists)
+                        {
+							noticeText = "Hold [E] to pick up, [F] to (try) add item";
+						} else
+                        {
+							noticeText = "Hold [E] to pick up, [F] to take item";
+						}
+						if (interactKeyPressed)
+						{
+							ItemHolder holder = itemHandler.GetComponent<ItemHolder>();
+							if (currentItemExists)
+							{
+									inventory.TakeHeldItem(out Item thisItem, out int stackTaken, 1);
+									if (stackTaken > 0)
+									{
+									bool failed = false;
+										holder.AddItem(thisItem, failed);
+										if (failed)
+                                        {
+											inventory.AddItem(thisItem, 1);
+                                        }
+									}
+							} else
+                            {
+								if (holder.GetItem())
+                                {
+									inventory.AddItem(holder.GetItem(), 1);
+									holder.RemoveItem(1);
+                                }
+                            }
+						}
+					}
+					else
+					{
 						noticeText = "Hold [E] to pick up";
 					}
-					if(Input.GetButton("PickUp")) {
-						if(!pickingUp || (pickingUp && !progressContainer.activeSelf)) {
+					if (Input.GetButton("PickUp"))
+					{
+						if (!pickingUp || (pickingUp && !progressContainer.activeSelf))
+						{
 							progressContainer.SetActive(true);
 							pickingUp = true;
-						} else {
+						}
+						else
+						{
 							pickingUpTime += Time.deltaTime;
 							progressImage.fillAmount = pickingUpTime / itemHandler.item.timeToGather;
 							progressText.text = (itemHandler.item.timeToGather - pickingUpTime).ToString("0.0");
 
-							if(pickingUpTime >= itemHandler.item.timeToGather) {
-								if(autoMiner) {
-									if(autoMiner.currentToolItem) {
+							if (pickingUpTime >= itemHandler.item.timeToGather)
+							{
+								if (autoMiner)
+								{
+									if (autoMiner.currentToolItem)
+									{
 										inventory.AddItem(autoMiner.GatherTool(), 1);
 									}
 									int q = 0;
-									foreach(Item item in autoMiner.items) {
+									foreach (Item item in autoMiner.items)
+									{
 										inventory.AddItem(item, autoMiner.itemAmounts[q]);
 										q++;
 									}
 								}
-								if(itemHandler.item.id == 6) { // Is it a furnace?
+								if (itemHandler.item.id == 6)
+								{ // Is it a furnace?
 									Furnace furnace = itemHandler.GetComponent<Furnace>();
-									if(furnace) {
+									if (furnace)
+									{
 										inventory.AddItem(fuelItem, (int)Mathf.Floor(furnace.fuel)); // ONLY WORKS IF WOOD IS ONLY FUEL SOURCE
-										if(furnace.currentSmeltingItem) {
-											inventory.AddItem(furnace.currentSmeltingItem, 1);
+										if (furnace.currentSmeltingItem.Count > 0)
+										{
+											for (int i = 0; i < furnace.currentSmeltingItem.Count; i++) {
+												inventory.AddItem(furnace.currentSmeltingItem[i], 1);
+											}
 										}
 									}
 								}
@@ -490,68 +676,108 @@ public class PlayerController : MonoBehaviour {
 								audioManager.Play("Grab");
 							}
 						}
-					} else if(pickingUp) {
+					}
+					else if (pickingUp)
+					{
 						hideNoticeText = true;
 						pickingUpTime = 0f;
 						progressImage.fillAmount = 0f;
 						progressContainer.SetActive(false);
 						pickingUp = false;
 					}
-				} else if(target.CompareTag("Resource") && distanceToTarget <= interactRange && !inventory.placingStructure) { // Gather resources
-					noticeText = "Hold [LMB] to gather";
-					if(Input.GetMouseButton(0) || Input.GetAxisRaw("ControllerTriggers") <= -0.1f) {
-						hideNoticeText = true;
-						if(!gathering || (gathering && !progressContainer.activeSelf)) {
-							gathering = true;
-							progressContainer.SetActive(true);
-						} else {
-							float multiplier = 1f;
-							bool hasTool = false;
-							if(inventory.currentSelectedItem && inventory.currentSelectedItem.type == Item.ItemType.Tool) {
-								multiplier = inventory.currentSelectedItem.speed;
-								hasTool = true;
+				}
+				else if (target.CompareTag("Resource") && distanceToTarget <= interactRange && !inventory.placingStructure)
+				{ // Gather resources
+					ResourceHandler resHand = target.GetComponent<ResourceHandler>();
+					bool canMine = true;
+					if (inventory.slots[inventory.selectedHotbarSlot].currentItem && inventory.slots[inventory.selectedHotbarSlot].currentItem.toolToughness >= resHand.resource.toughness || resHand.resource.toughness == 0)
+					{
+						noticeText = "Hold [LMB] to gather";
+						canMine = true;
+					} else
+                    {
+						noticeText = "Higher Tool Tier Needed";
+						canMine = false;
+					}
+					if (Input.GetMouseButton(0) || Input.GetAxisRaw("ControllerTriggers") <= -0.1f)
+					{
+						if (canMine)
+						{
+							hideNoticeText = true;
+							if (!gathering || (gathering && !progressContainer.activeSelf))
+							{
+								gathering = true;
+								progressContainer.SetActive(true);
 							}
-							gatheringTime += Time.deltaTime;
-							if(currentResource == null || currentResource.gameObject != target) {
-								currentResource = target.GetComponent<ResourceHandler>();
-							}
-							progressImage.fillAmount = gatheringTime / (currentResource.resource.gatherTime / multiplier);
-							progressText.text = (currentResource.resource.gatherTime / multiplier - gatheringTime).ToString("0.0");
-							if(gatheringTime >= currentResource.resource.gatherTime / multiplier) {
-								int i = 0;
-								foreach(Item item in currentResource.resource.resourceItems) {
-									if(Random.Range(0f, 1f) <= currentResource.resource.chances[i]) {
-										inventory.AddItem(item, hasTool ? inventory.currentSelectedItem.gatherAmount : 1);
-									}
-									i++;
+							else
+							{
+								float multiplier = 1f;
+								bool hasTool = false;
+								if (inventory.currentSelectedItem && inventory.currentSelectedItem.type == Item.ItemType.Tool)
+								{
+									multiplier = inventory.currentSelectedItem.speed;
+									hasTool = true;
 								}
-								gatheringTime = 0f;
-								progressImage.fillAmount = 0f;
-								currentResource.Gather(hasTool ? inventory.currentSelectedItem.gatherAmount : 1); // CURRENTLY GATHERS GATHER AMOUNT EVEN IF RESOURCE HAS LESS THAN THAT AMOUNT LEFT
-								CameraShaker.Instance.ShakeOnce(2f, 3f, 0.1f, 0.3f);
+								gatheringTime += Time.deltaTime;
+								if (currentResource == null || currentResource.gameObject != target)
+								{
+									currentResource = target.GetComponent<ResourceHandler>();
+								}
+								progressImage.fillAmount = gatheringTime / (currentResource.resource.gatherTime / multiplier);
+								progressText.text = (currentResource.resource.gatherTime / multiplier - gatheringTime).ToString("0.0");
+								if (gatheringTime >= currentResource.resource.gatherTime / multiplier)
+								{
+									int i = 0;
+									foreach (Item item in currentResource.resource.resourceItems)
+									{
+										if (Random.Range(0f, 1f) <= currentResource.resource.chances[i])
+										{
+											inventory.AddItem(item, hasTool ? inventory.currentSelectedItem.gatherAmount : 1);
+										}
+										i++;
+									}
+									gatheringTime = 0f;
+									progressImage.fillAmount = 0f;
+									currentResource.Gather(hasTool ? inventory.currentSelectedItem.gatherAmount : 1); // CURRENTLY GATHERS GATHER AMOUNT EVEN IF RESOURCE HAS LESS THAN THAT AMOUNT LEFT
+									CameraShaker.Instance.ShakeOnce(2f, 3f, 0.1f, 0.3f);
+								}
 							}
-						}
-					} else if(gathering || pickingUp) {
+						} else
+                        {
+							noticeText = "Higher Tool Tier Needed !!";
+                        }
+					}
+					else if (gathering || pickingUp)
+					{
 						CancelGatherAndPickup();
 						hideNoticeText = true;
 					}
-				} else if(gathering || pickingUp) {
-					CancelGatherAndPickup();
-					hideNoticeText = true;
-				} else {
-					hideNoticeText = true;
 				}
-			} else {
-				if(gathering || pickingUp) {
+				else if (gathering || pickingUp)
+				{
 					CancelGatherAndPickup();
 					hideNoticeText = true;
 				}
-				if(Input.GetMouseButtonDown(0) || Input.GetAxisRaw("ControllerTriggers") <= -0.1f) {
+				else
+				{
+					hideNoticeText = true;
+				}
+			}
+			else
+			{
+				if (gathering || pickingUp)
+				{
+					CancelGatherAndPickup();
+					hideNoticeText = true;
+				}
+				if (Input.GetMouseButtonDown(0) || Input.GetAxisRaw("ControllerTriggers") <= -0.1f)
+				{
 					Attack();
 				}
 				target = null;
 				hideNoticeText = true;
-				if(progressContainer.activeSelf) {
+				if (progressContainer.activeSelf)
+				{
 					progressContainer.SetActive(false);
 				}
 			}
@@ -559,63 +785,112 @@ public class PlayerController : MonoBehaviour {
 
 		handAnimator.SetBool("Gathering", gathering);
 
-		if(hideNoticeText) {
-			if(!inventory.placingStructure) {
+		if (hideNoticeText)
+		{
+			if (!inventory.placingStructure)
+			{
 				HideNoticeText();
 			}
-		} else {
+		}
+		else
+		{
 			ShowNoticeText(noticeText);
-		} 
+		}
 
-		if(transform.position.y < -100f) {
-			if(currentWorld == WorldManager.WorldType.Light) {
+		if (transform.position.y < -100f)
+		{
+			if (currentWorld == WorldManager.WorldType.Light)
+			{
 				EnterDarkWorld();
 				achievementManager.GetAchievement(10); // Achievement: Explorer
-			} else {
+			}
+			else
+			{
 				EnterLightWorld();
 			}
 		}
 
-		if(dead) {
+		if (dead)
+		{
 			purgatoryRespawnTimeText.text = (-(Time.time - nextTimeToRespawn)).ToString("0");
-			if(Time.time >= nextTimeToRespawn) {
+			if (Time.time >= nextTimeToRespawn)
+			{
 				Respawn();
 			}
 		}
 	}
 
-	public void LoadCreativeMode() {
+	void ManageBuildingInteractKey () //NOTE: only use interactKeyPressed if you are dealing with lots of something.
+    {
+		interactKeyPressed = false;
+		if (Input.GetButtonDown("Interact"))
+        {
+			interactKeyHeldTime = Time.time + interactKeyHeldDelay;
+			interactKeyPressed = true;
+        }
+
+		if (Time.time > interactKeyHeldTime)
+		{
+			if (Input.GetButton("Interact")) {
+				if (interactKeyPressed)//should half the "true" returns that interactKeyPressed should give
+				{
+					interactKeyPressed = false;
+				}
+				else
+				{
+					interactKeyPressed = true;
+				}
+			} else
+            {
+				interactKeyHeldTime = Time.time + 10000f;
+            }
+		}
+    }
+
+	public void LoadCreativeMode()
+	{
 		mode = 1;
 		hungerAmountImage.gameObject.SetActive(false);
 		healthAmountImage.gameObject.SetActive(false);
 	}
 
-	public void Consume(Item item) {
+	public void Consume(Item item)
+	{
 		//handAnimator.SetTrigger("Consume");
 		useParticles.Play();
 		GainCalories(item.calories);
 	}
 
-	public bool ActiveMenu() {
+	public bool ActiveMenu()
+	{
 		return inventory.inventoryContainer.activeSelf || ActiveSystemMenu();
 	}
 
-	public bool ActiveSystemMenu() {
+	public bool ActiveSystemMenu()
+	{
 		return pauseManager.paused;
 	}
 
-	void Attack() {
-		if(handAnimator.GetCurrentAnimatorClipInfo(0)[0].clip.name != "PlayerAttack") { // IF PLAYERATTACK IS RENAMED, THIS WILL NOT WORK
+	void Attack()
+	{
+		if (handAnimator.GetCurrentAnimatorClipInfo(0)[0].clip.name != "PlayerAttack")
+		{ // IF PLAYERATTACK IS RENAMED, THIS WILL NOT WORK
 			handAnimator.SetTrigger("Attack");
-			if(target) {
+			if (target)
+			{
 				Health targetHealth = target.GetComponent<Health>();
-				if(targetHealth) {
-					if(inventory.currentSelectedItem) {
+				if (targetHealth)
+				{
+					if (inventory.currentSelectedItem)
+					{
 						WeaponHandler handler = inventory.currentSelectedItem.prefab.GetComponent<WeaponHandler>();
-						if(handler && handler.weapon.type == Weapon.WeaponType.Melee) {
+						if (handler && handler.weapon.type == Weapon.WeaponType.Melee)
+						{
 							targetHealth.TakeDamage(handler.weapon.damage);
 						}
-					} else {
+					}
+					else
+					{
 						targetHealth.TakeDamage(handDamage);
 					}
 				}
@@ -623,33 +898,47 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
-	void OnCollisionEnter(Collision col) {
-		if(col.relativeVelocity.magnitude >= impactVelocityToDamage && !dead && mode != 1) {
-			if(ignoreFallDamage) {
+	void OnCollisionEnter(Collision col)
+	{
+		if (col.relativeVelocity.magnitude >= impactVelocityToDamage && !dead && mode != 1)
+		{
+			if (ignoreFallDamage)
+			{
 				Invoke("ResetIgnoreFallDamage", 1f);
-			} else {
+			}
+			else
+			{
 				TakeDamage(col.relativeVelocity.magnitude * impactDamage);
 			}
 		}
 	}
 
-	void OnTriggerEnter(Collider other) {
-		if(other.CompareTag("Item")) {
+	void OnTriggerEnter(Collider other)
+	{
+		if (other.CompareTag("Item"))
+		{
 			ItemHandler itemHandler = other.GetComponentInParent<ItemHandler>();
-			if(itemHandler) {
-				if(itemHandler.item.id == 36) { // Ladder
+			if (itemHandler)
+			{
+				if (itemHandler.item.id == 36)
+				{ // Ladder
 					StartClimbing();
 				}
 			}
 		}
 	}
 
-	void OnTriggerStay(Collider other) {
-		if(!climbing) {
-			if(other.CompareTag("Item")) {
+	void OnTriggerStay(Collider other)
+	{
+		if (!climbing)
+		{
+			if (other.CompareTag("Item"))
+			{
 				ItemHandler itemHandler = other.GetComponentInParent<ItemHandler>();
-				if(itemHandler) {
-					if(itemHandler.item.id == 36) { // Ladder
+				if (itemHandler)
+				{
+					if (itemHandler.item.id == 36)
+					{ // Ladder
 						StartClimbing();
 					}
 				}
@@ -657,92 +946,116 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
-	void OnTriggerExit(Collider other) {
+	void OnTriggerExit(Collider other)
+	{
 		StopClimbing();
 	}
 
-	void StartClimbing() {
+	void StartClimbing()
+	{
 		climbing = true;
 		rb.useGravity = false;
 	}
 
-	void StopClimbing() {
+	void StopClimbing()
+	{
 		climbing = false;
-		if(!flying) {
+		if (!flying)
+		{
 			rb.useGravity = true;
 		}
 	}
 
-	void StartFlying() {
+	void StartFlying()
+	{
 		flying = true;
 		rb.velocity = Vector3.zero;
 		rb.useGravity = false;
 		rb.drag = flyingDrag;
 	}
 
-	void StopFlying() {
+	void StopFlying()
+	{
 		flying = false;
 		rb.drag = originalDrag;
-		if(!climbing) {
+		if (!climbing)
+		{
 			rb.useGravity = true;
 		}
 	}
 
-	void ResetIgnoreFallDamage() {
+	void ResetIgnoreFallDamage()
+	{
 		ignoreFallDamage = false;
 	}
 
-	void GainCalories(float amount) {
+	void GainCalories(float amount)
+	{
 		hunger += amount;
-		if(hunger > maxHunger) {
+		if (hunger > maxHunger)
+		{
 			hunger = maxHunger;
 		}
 		HungerChange();
 	}
 
-	void LoseCalories(float amount) {
+	void LoseCalories(float amount)
+	{
 		hunger -= amount;
 		HungerChange();
-		if(hunger < 0f) {
+		if (hunger < 0f)
+		{
 			hunger = 0f;
 		}
 	}
 
-	void GainHealth(float amount) {
+	void GainHealth(float amount)
+	{
 		health += amount;
-		if(health > maxHealth) {
+		if (health > maxHealth)
+		{
 			health = maxHealth;
 		}
 		HealthChange();
 	}
 
-	public void TakeDamage(float amount) {
+	public void TakeDamage(float amount)
+	{
 		health -= amount;
 		CameraShaker.Instance.ShakeOnce(4f, 5f, 0.1f, 0.5f);
 		damagePanelAnim.Play();
-		if(health <= 0 && !dead) {
+		if (health <= 0 && !dead)
+		{
 			Die();
-		} else if(health < 0f) {
+		}
+		else if (health < 0f)
+		{
 			health = 0f;
 		}
 		HealthChange();
 	}
 
-	public void TakeEffectDamage(float amount) {
+	public void TakeEffectDamage(float amount)
+	{
 		health -= amount;
-		if(health <= 0 && !dead) {
+		if (health <= 0 && !dead)
+		{
 			Die();
-		} else if(health < 0f) {
+		}
+		else if (health < 0f)
+		{
 			health = 0f;
 		}
 		HealthChange();
 	}
 
-	void HungerChange() {
+	void HungerChange()
+	{
 		hungerAmountImage.fillAmount = hunger / maxHunger;
 	}
 
-	void HealthChange() {
+	void HealthChange()
+	{
 		healthAmountImage.fillAmount = health / maxHealth;
 	}
 
@@ -761,7 +1074,8 @@ public class PlayerController : MonoBehaviour {
 	}
 	*/
 
-	void CancelGatherAndPickup() {
+	void CancelGatherAndPickup()
+	{
 		gatheringTime = 0f;
 		pickingUpTime = 0f;
 		progressImage.fillAmount = 0f;
@@ -770,7 +1084,8 @@ public class PlayerController : MonoBehaviour {
 		pickingUp = false;
 	}
 
-	void EnterLightWorld() {
+	void EnterLightWorld()
+	{
 
 		LoadLightWorld();
 
@@ -783,7 +1098,8 @@ public class PlayerController : MonoBehaviour {
 		Invoke("HideRealmNoticeText", 3);
 	}
 
-	void EnterDarkWorld() {
+	void EnterDarkWorld()
+	{
 
 		LoadDarkWorld();
 
@@ -796,7 +1112,8 @@ public class PlayerController : MonoBehaviour {
 		Invoke("HideRealmNoticeText", 3);
 	}
 
-	public void LoadLightWorld() {
+	public void LoadLightWorld()
+	{
 		currentWorld = WorldManager.WorldType.Light;
 		RenderSettings.fogColor = defaultFogColor;
 		RenderSettings.fogDensity = defaultFogDensity;
@@ -807,7 +1124,8 @@ public class PlayerController : MonoBehaviour {
 		rain.SetActive(false);
 	}
 
-	public void LoadDarkWorld() {
+	public void LoadDarkWorld()
+	{
 		currentWorld = WorldManager.WorldType.Dark;
 		RenderSettings.fogColor = Color.black;
 		RenderSettings.fogDensity = 0.04f;
@@ -818,15 +1136,19 @@ public class PlayerController : MonoBehaviour {
 		rain.SetActive(true);
 	}
 
-	void HideRealmNoticeText() {
+	void HideRealmNoticeText()
+	{
 		canvasAnim.SetTrigger("RealmNoticeTextExit");
 	}
 
-	public void Die() {
-		if(difficulty > 1) {
+	public void Die()
+	{
+		if (difficulty > 1)
+		{
 			inventory.ClearInventory();
 		}
-		if(inventory.placingStructure) {
+		if (inventory.placingStructure)
+		{
 			inventory.CancelStructurePlacement();
 		}
 		playerCameraPostProcessingBehaviour.profile = darkPostProcessingProfile;
@@ -838,54 +1160,71 @@ public class PlayerController : MonoBehaviour {
 		dead = true;
 	}
 
-	void Respawn() {
+	void Respawn()
+	{
 		health = maxHealth;
 		hunger = maxHunger;
 		dead = false;
-		if(currentWorld == WorldManager.WorldType.Light) {
+		if (currentWorld == WorldManager.WorldType.Light)
+		{
 			EnterLightWorld();
-		} else {
+		}
+		else
+		{
 			EnterDarkWorld();
 		}
 	}
 
-	public void ShowNoticeText(string text) {
-		if(!noticeText.gameObject.activeSelf) {
+	public void ShowNoticeText(string text)
+	{
+		if (!noticeText.gameObject.activeSelf)
+		{
 			noticeText.gameObject.SetActive(true);
 		}
 		noticeText.text = text;
 	}
 
-	public void HideNoticeText() {
-		if(noticeText.gameObject.activeSelf) {
+	public void HideNoticeText()
+	{
+		if (noticeText.gameObject.activeSelf)
+		{
 			noticeText.text = "";
 			noticeText.gameObject.SetActive(false);
 		}
 	}
 
-	public void LockLook(bool _lockLook) {
+	public void LockLook(bool _lockLook)
+	{
 		lockLook = _lockLook;
 	}
 
-	void FixedUpdate() {
-		if(climbing) {
+	void FixedUpdate()
+	{
+		if (climbing)
+		{
 			Collider[] cols = Physics.OverlapCapsule(transform.position - Vector3.up * 0.5f, transform.position + Vector3.up * 0.5f, 0.5f);
-			if(cols.Length - 2 < 1) { // Doesn't seem to be a ladder near (Prevents flying). We do the -2 because the player and groundCheck collide with it.
+			if (cols.Length - 2 < 1)
+			{ // Doesn't seem to be a ladder near (Prevents flying). We do the -2 because the player and groundCheck collide with it.
 				StopClimbing();
 			}
 		}
 
-		if(grounded) {
+		if (grounded)
+		{
 			Collider[] cols = Physics.OverlapBox(transform.position - Vector3.up * 0.5f, 0.5f * Vector3.one);
-			if(cols.Length - 2 < 1) { // Doesn't seem to be ground near (Prevents flying). We do the -2 because the player and groundCheck collide with it.
+			if (cols.Length - 2 < 1)
+			{ // Doesn't seem to be ground near (Prevents flying). We do the -2 because the player and groundCheck collide with it.
 				grounded = false;
 			}
 		}
 
-		if(climbing) {
+		if (climbing)
+		{
 			rb.MovePosition(rb.position + (transform.TransformDirection(Vector3.right * moveAmount.x + Vector3.up * moveAmount.y + (Vector3.forward * (moveAmount.z > 1 ? moveAmount.z : 0))) + Vector3.up * moveAmount.z) * Time.fixedDeltaTime);
 			rb.velocity = Vector3.zero;
-		} else {
+		}
+		else
+		{
 			rb.MovePosition(rb.position + (transform.TransformDirection(moveAmount) * Time.fixedDeltaTime));
 		}
 	}

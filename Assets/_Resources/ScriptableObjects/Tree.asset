@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Tree
   m_EditorClassIdentifier: 
   prefab: {fileID: 1523322516565944, guid: c5b0387d80fa75244b875949079823ed, type: 3}
+  type: 1
   id: 5
   resourceItems:
   - {fileID: 11400000, guid: e605b7711cb22d140805767d6575e6ca, type: 2}
@@ -20,4 +21,5 @@ MonoBehaviour:
   - 1
   maxGathers: 6
   gatherTime: 2.5
+  toughness: 0
   infiniteGathers: 0

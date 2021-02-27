@@ -21,7 +21,7 @@ public class ResourceHandler : MonoBehaviour {
 		health -= amount;
 		if(health <= 0 && !resource.infiniteGathers) {
 			hive.RemoveResource(this);
-			if(resource.id == 5) { // This resource is a tree
+			if(resource.type == Resource.ResourceType.Tree) {
 				GetComponent<TreeResource>().DropFruits();
 			}
 			Destroy(gameObject);

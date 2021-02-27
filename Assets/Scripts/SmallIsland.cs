@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class SmallIsland : MonoBehaviour {
 
+	public enum IslandType {Light, Dark};
+	public IslandType islandType;
 	public Vector3 moveAmount;
 
 	public float speed = 0.5f;

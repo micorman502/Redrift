@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Ground
   m_EditorClassIdentifier: 
   prefab: {fileID: 0}
+  type: 4
   id: 1
   resourceItems:
   - {fileID: 11400000, guid: de8ae7d39448b624eb7111ec5c2219a0, type: 2}
@@ -22,4 +23,5 @@ MonoBehaviour:
   - 0.33
   maxGathers: 0
   gatherTime: 1
+  toughness: 0
   infiniteGathers: 1

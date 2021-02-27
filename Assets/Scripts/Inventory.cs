@@ -394,6 +394,56 @@ public class Inventory : MonoBehaviour {
 			}
 		}
 	}
+	public void LowerItemStack (int amount, int slotID)
+    {
+		slots[slotID].DecreaseItem(amount);
+		if (slots[slotID].stackCount <= -1) {
+			slots[slotID].ClearItem();
+		}
+	}
+
+	public void TakeHeldItem(out Item item, out int stackTaken, int amountTaken) //very nice, simple function that uses other functions
+	{
+		item = slots[selectedHotbarSlot].currentItem;
+		stackTaken = 0;
+		if (mode != 1)
+		{
+			if (slots[selectedHotbarSlot].stackCount - amountTaken <= 0)
+			{
+				stackTaken = slots[selectedHotbarSlot].stackCount;
+				slots[selectedHotbarSlot].ClearItem();
+			}
+			else
+			{
+				stackTaken = amountTaken;
+				LowerItemStack(amountTaken, selectedHotbarSlot);
+			}
+		} else
+        {
+			stackTaken = amountTaken;
+        }
+	}
+
+	public void TakeHeldItem(out int stackTaken, int amountTaken) //very nice, simple function that uses other functions
+	{
+		stackTaken = 0;
+		if (mode != 1)
+		{
+			if (slots[selectedHotbarSlot].stackCount - amountTaken <= 0)
+			{
+				stackTaken = slots[selectedHotbarSlot].stackCount;
+				slots[selectedHotbarSlot].ClearItem();
+			}
+			else
+			{
+				stackTaken = amountTaken;
+				LowerItemStack(amountTaken, selectedHotbarSlot);
+			}
+		} else
+        {
+			stackTaken = amountTaken;
+        }
+	}
 
 	/* Trying to make a better system
 		 * public void AddItem(Item item, int amount) {

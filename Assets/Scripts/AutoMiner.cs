@@ -75,39 +75,53 @@ public class AutoMiner : MonoBehaviour {
 						animator.SetBool("Gathering", gathering);
 					}
 
-					ResourceHandler closestHandler = null;
-					float closestDistance = Mathf.Infinity;
-					foreach(ResourceHandler resourceHandler in hive.worldResources) {
-						if(resourceHandler) {
-							float dist = Vector3.Distance(transform.position, resourceHandler.transform.position);
-							if(dist < closestDistance) {
-								closestDistance = dist;
-								closestHandler = resourceHandler;
-							}
-						}
-					}
 
-					if(closestHandler != null) {
-						target = closestHandler;
-						if(agent.isStopped) {
-							agent.isStopped = false;
-						}
-						//target = hive.worldResources[Random.Range(0, hive.worldResources.Count)];
-						agent.SetDestination(target.transform.position);
-						if(Vector3.Distance(agent.destination, target.transform.position) > interactRange) {
-							target = null; 
-						}
-					} else {
-						if(!agent.isStopped) {
-							agent.isStopped = true;
-							moving = false;
-							animator.SetBool("Moving", moving);
-						}
-					}
+					FindNearestTarget();
 				}
 			}
 		} else {
 			//Debug.Log("Not on NavMesh");
+		}
+	}
+
+	public void FindNearestTarget ()
+    {
+		ResourceHandler closestHandler = null;
+		float closestDistance = Mathf.Infinity;
+		foreach (ResourceHandler resourceHandler in hive.worldResources)
+		{
+			if (resourceHandler)
+			{
+				float dist = Vector3.Distance(transform.position, resourceHandler.transform.position);
+				if (dist < closestDistance && currentToolItem.toolToughness >= resourceHandler.resource.toughness)
+				{
+					closestDistance = dist;
+					closestHandler = resourceHandler;
+				}
+			}
+		}
+		if (closestHandler != null)
+		{
+			target = closestHandler;
+			if (agent.isStopped)
+			{
+				agent.isStopped = false;
+			}
+			//target = hive.worldResources[Random.Range(0, hive.worldResources.Count)];
+			agent.SetDestination(target.transform.position);
+			if (Vector3.Distance(agent.destination, target.transform.position) > interactRange)
+			{
+				target = null;
+			}
+		}
+		else
+		{
+			if (!agent.isStopped)
+			{
+				agent.isStopped = true;
+				moving = false;
+				animator.SetBool("Moving", moving);
+			}
 		}
 	}
 
@@ -151,21 +165,28 @@ public class AutoMiner : MonoBehaviour {
 	}
 
 	void AddItem(Item item, int amount) {
+		if (currentToolItem.toolToughness >= target.resource.toughness)
+		{
+			bool hasItem = false;
 
-		bool hasItem = false;
-
-		int i = 0;
-		foreach(Item _item in items) {
-			if(_item.id == item.id) {
-				hasItem = true;
-				itemAmounts[i] += amount;
+			int i = 0;
+			foreach (Item _item in items)
+			{
+				if (_item.id == item.id)
+				{
+					hasItem = true;
+					itemAmounts[i] += amount;
+				}
+				i++;
 			}
-			i++;
-		}
 
-		if(!hasItem) {
-			items.Add(item);
-			itemAmounts.Add(amount);
-		}
+			if (!hasItem)
+			{
+				items.Add(item);
+				itemAmounts.Add(amount);
+			}
+		} else { //if you cannot gather this resource, retry and find the nearest mineable resource.
+			FindNearestTarget();
+        }
 	}
 }

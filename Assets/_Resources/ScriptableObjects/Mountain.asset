@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Mountain
   m_EditorClassIdentifier: 
   prefab: {fileID: 0}
+  type: 2
   id: 3
   resourceItems:
   - {fileID: 11400000, guid: cb2b8f9de15633642b25d8a3e5609e34, type: 2}
@@ -20,4 +21,5 @@ MonoBehaviour:
   - 1
   maxGathers: 0
   gatherTime: 8
+  toughness: 2
   infiniteGathers: 1

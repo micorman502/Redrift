@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Stone
   m_EditorClassIdentifier: 
   prefab: {fileID: 1813677803362390, guid: 2dba0152a55eceb4fab9f576fbbf9bd1, type: 3}
+  type: 2
   id: 4
   resourceItems:
   - {fileID: 11400000, guid: cb2b8f9de15633642b25d8a3e5609e34, type: 2}
@@ -20,4 +21,5 @@ MonoBehaviour:
   - 1
   maxGathers: 8
   gatherTime: 8
+  toughness: 1
   infiniteGathers: 0

@@ -15,6 +15,7 @@ MonoBehaviour:
   itemName: Conveyor Belt
   itemDescription: Allows for easy transport of items
   type: 2
+  subType: 2
   id: 25
   icon: {fileID: 21300000, guid: 72555b50ad8ec32419e3f5a156cf8943, type: 3}
   prefab: {fileID: 1070651816951194, guid: 2adc991730722e34184fbd8d6aa78f40, type: 3}
@@ -26,6 +27,7 @@ MonoBehaviour:
     type: 3}
   speed: 0
   gatherAmount: 0
+  toolToughness: 0
   power: 0
   fuel: 0
   smeltItem: {fileID: 0}

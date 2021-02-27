@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91adea7c2cf48c44bab70182c5512d9d, type: 3}
+  m_Name: FurnaceMedium
+  m_EditorClassIdentifier: 
+  itemName: Medium Furnace
+  itemDescription: For high-speed smelting. Fairly Inefficient.
+  type: 2
+  subType: 1
+  id: 37
+  icon: {fileID: 21300000, guid: 4ebd8a6c4adc51444a50ee8b69ff01a9, type: 3}
+  prefab: {fileID: 5322851568078046562, guid: c50edb964af82364181937752b0e3a0b, type: 3}
+  timeToGather: 0.25
+  handRotation: {x: 0, y: 0, z: 0}
+  handScale: {x: 0.2, y: 0.2, z: 0.2}
+  maxStackCount: 1
+  previewPrefab: {fileID: 5319011823170651699, guid: e3132b4ac1e876b47a620d1c3ffafd71,
+    type: 3}
+  speed: 0
+  gatherAmount: 0
+  toolToughness: 0
+  power: 0
+  fuel: 0
+  smeltItem: {fileID: 0}
+  alignToNormal: 0
+  gridSize: {x: 0.7, y: 0.7, z: 1}
+  rots:
+  - {x: -90, y: 0, z: 0}
+  - {x: -90, y: 0, z: 90}
+  - {x: -90, y: 0, z: 180}
+  - {x: -90, y: 0, z: 270}
+  achievementNumber: 13
+  calories: 0

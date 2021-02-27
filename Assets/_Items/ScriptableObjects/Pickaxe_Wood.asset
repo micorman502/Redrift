@@ -25,6 +25,7 @@ MonoBehaviour:
   previewPrefab: {fileID: 0}
   speed: 2
   gatherAmount: 1
+  toolToughness: 1
   power: 0
   fuel: 0
   smeltItem: {fileID: 0}

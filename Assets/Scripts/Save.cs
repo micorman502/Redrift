@@ -28,6 +28,7 @@ public class Save {
 	public List<ItemSaveData> itemSaveData = new List<ItemSaveData>();
 
 	public List<SerializableVector3> smallIslandPositions = new List<SerializableVector3>();
+	public List<SerializableVector3> smallDarkIslandPositions = new List<SerializableVector3>();
 
 	//public List<int> treeAssociation = new List<int>();
 
@@ -49,7 +50,8 @@ public class ItemSaveData {
 
 	public float fuel;
 	public int itemID;
-	public List<int> itemIDs;
+	public int itemAmount;
+	public List<int> itemIDs = new List<int>();
 	public List<int> itemAmounts;
 	public int num;
 
