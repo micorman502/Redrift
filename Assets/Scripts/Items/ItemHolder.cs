@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ItemHolder : MonoBehaviour
+public class ItemHolder : MonoBehaviour, ITakeItems
 {
     [SerializeField] private Item heldItem;
     [SerializeField] private int stackSize;
@@ -36,14 +36,14 @@ public class ItemHolder : MonoBehaviour
         stackSize = 0;
         heldItem = null;
     }
-    public void AddItem (Item thisItem, bool rejected)
+    public void AddItem (Item thisItem, int amount, out bool rejected)
     {
         bool r = true;
         if (thisItem == heldItem)
         {
-            if (stackSize + 1 <= heldItem.maxStackCount * 2)
+            if (stackSize + amount <= heldItem.maxStackCount * 2)
             {
-                stackSize += 1;
+                stackSize += amount;
                 r = false;
                 itemDisplay.sprite = heldItem.icon;
                 text.text = stackSize.ToString();
@@ -51,18 +51,22 @@ public class ItemHolder : MonoBehaviour
             {
                 r = true;
             }
-        } else if (heldItem == null)
-        {
+        } else if (heldItem == null) {
             heldItem = thisItem;
-            stackSize = 1;
+            stackSize = amount;
             itemDisplay.sprite = heldItem.icon;
             text.text = stackSize.ToString();
+            r = false;
         } else
         {
             r = true;
         }
         rejected = r;
-
+    }
+    public void AddItem(Item thisItem,  out bool rejected)
+    {
+        AddItem(thisItem, 1, out bool r);
+        rejected = r;
     }
 
     public void RemoveItem (int amountRemoved, out int itemsOut)

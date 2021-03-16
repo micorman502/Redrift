@@ -60,11 +60,10 @@ public class AutoMiner : MonoBehaviour {
 							int i = 0;
 							foreach(Item item in target.resource.resourceItems) {
 								if(Random.Range(0f, 1f) <= target.resource.chances[i]) {
-									AddItem(item, currentToolItem.gatherAmount);
+									AddItem(item, target.Gather(currentToolItem.gatherAmount)); 
 								}
 								i++;
 							}
-							target.Gather(currentToolItem.gatherAmount);
 							gatherTime = 0f;
 						}
 					}

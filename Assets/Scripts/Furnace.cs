@@ -94,7 +94,6 @@ public class Furnace : MonoBehaviour {
 	void StartSmelting() {
 		if (fuel >= fuelUse && currentSmeltingItem.Count > 0 && !smelting)
 		{
-			fuel -= fuelUse;
 			smelting = true;
 			finishTime = Time.time + smeltTime;
 			smoke.Play();
@@ -104,6 +103,7 @@ public class Furnace : MonoBehaviour {
 	}
 
 	void StopSmelting() {
+		fuel -= fuelUse;
 		smelting = false;
 		currentSmeltingItem.RemoveAt(currentSmeltingItem.Count - 1);
 		smoke.Stop();

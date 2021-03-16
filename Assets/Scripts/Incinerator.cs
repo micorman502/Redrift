@@ -21,13 +21,25 @@ public class Incinerator : MonoBehaviour {
 				if(col && col.CompareTag("Item")) {
 					ItemHandler itemHandler = col.GetComponent<ItemHandler>();
 					if(itemHandler) {
-						Destroy(itemHandler.gameObject);
-						smokeParticles.Play();
-						fireParticles.Play();
-						achievementManager.GetAchievement(12); // Destruction achievement
+						IncinerateObject(itemHandler.gameObject);
 					}
 				}
 			}
 		}
+	}
+
+	public void IncinerateObject (GameObject incin)
+    {
+		Destroy(incin.gameObject);
+		smokeParticles.Play();
+		fireParticles.Play();
+		achievementManager.GetAchievement(12); // Destruction achievement
+	}
+
+	public void IncinerateEffects ()
+    {
+		smokeParticles.Play();
+		fireParticles.Play();
+		achievementManager.GetAchievement(12); // Destruction achievement
 	}
 }

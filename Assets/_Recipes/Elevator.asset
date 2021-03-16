@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6a7a2305287544428cbfad1cf276d74, type: 3}
+  m_Name: Elevator
+  m_EditorClassIdentifier: 
+  inputs:
+  - {fileID: 11400000, guid: e605b7711cb22d140805767d6575e6ca, type: 2}
+  - {fileID: 11400000, guid: 221124a2341142445ac06a74d0443d60, type: 2}
+  - {fileID: 11400000, guid: 38edbc86290680b43b4fb593b501534f, type: 2}
+  - {fileID: 11400000, guid: 765505fe2e725634cbf27b08c111fb89, type: 2}
+  amounts: 04000000020000000100000001000000
+  replacementItems: []
+  replacementItemAmounts: 
+  output: {fileID: 11400000, guid: a1cc15fb13fa9854bb82f2df00cd0dc4, type: 2}
+  outputAmount: 1
+  categories: 01000000

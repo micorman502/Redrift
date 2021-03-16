@@ -25,6 +25,8 @@ public class SaveManager : MonoBehaviour {
 
 	WorldManager worldManager;
 
+	StructurePositionReferences StructurePosRef; //idk... WIP
+
 	HiveMind hive;
 
 	public int difficulty;
@@ -45,6 +47,7 @@ public class SaveManager : MonoBehaviour {
 		inventory = playerObj.GetComponent<Inventory>();
 		player = playerObj.GetComponent<PlayerController>();
 		persistentData = FindObjectOfType<PersistentData>();
+		StructurePosRef = FindObjectOfType<StructurePositionReferences>();
 	}
 
 	void Start() {
@@ -137,6 +140,8 @@ public class SaveManager : MonoBehaviour {
 						AutoSorter autoSorter = itemObj.GetComponent<AutoSorter>();
 						Radio radio = itemObj.GetComponent<Radio>();
 						LightItem li = itemObj.GetComponent<LightItem>();
+						GridPosition gr = itemObj.GetComponent<GridPosition>();
+						ElevatorBlock elevBlock = itemObj.GetComponent<ElevatorBlock>();
 						if(handler.item.type == Item.ItemType.Structure && handler.item.subType == Item.ItemSubType.Furnace) {
 							Furnace furnace = itemObj.GetComponent<Furnace>();
 							furnace.fuel = save.itemSaveData[i].fuel;
@@ -181,6 +186,14 @@ public class SaveManager : MonoBehaviour {
 						if(li) {
 							li.SetIntensity(save.itemSaveData[i].num);
 						}
+						if (gr)
+                        {
+							gr.Setup();
+                        }
+						if (elevBlock)
+                        {
+							elevBlock.SetPosRef(StructurePosRef);
+                        }
 					}
 				}
 			}

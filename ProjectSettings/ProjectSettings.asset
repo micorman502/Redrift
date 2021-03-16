@@ -12,8 +12,8 @@ PlayerSettings:
   targetDevice: 2
   useOnDemandResources: 0
   accelerometerFrequency: 60
-  companyName: Redlabs + Microman502
-  productName: Redrift
+  companyName: Redlabs
+  productName: Adrift
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0, g: 0, b: 0, a: 1}
@@ -123,7 +123,7 @@ PlayerSettings:
     16:10: 1
     16:9: 1
     Others: 1
-  bundleVersion: 1.0.1480.2911
+  bundleVersion: 1.0.2255.4989
   preloadedAssets: []
   metroInputSource: 0
   wsaTransparentSwapchain: 0
@@ -291,7 +291,10 @@ PlayerSettings:
       m_Kind: 0
   m_BuildTargetPlatformIcons: []
   m_BuildTargetBatching: []
-  m_BuildTargetGraphicsAPIs: []
+  m_BuildTargetGraphicsAPIs:
+  - m_BuildTarget: WebGLSupport
+    m_APIs: 0b00000008000000
+    m_Automatic: 1
   m_BuildTargetVRSettings: []
   openGLRequireES31: 0
   openGLRequireES31AEP: 0
@@ -538,7 +541,7 @@ PlayerSettings:
   webGLWasmStreaming: 0
   scriptingDefineSymbols:
     1: 
-    13: 
+    13: BUILD_TYPE_RELEASE;BUILD_PLATFORM_WEBGL;BUILD_ARCH_WEBGL
   platformArchitecture: {}
   scriptingBackend: {}
   il2cppCompilerConfiguration: {}

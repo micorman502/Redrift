@@ -106,7 +106,7 @@ public class Inventory : MonoBehaviour {
 		if(mode != 1) {
 			AddItem(itemHandler.item, 1); //TODO: Check if inventory is full first!
 		}
-		Destroy(itemHandler.gameObject);
+		itemHandler.GetDestroyed();
 	}
 
 	void Update() {
@@ -120,6 +120,7 @@ public class Inventory : MonoBehaviour {
 			if(inventoryContainer.activeSelf) {
 				Cursor.lockState = CursorLockMode.None;
 				Cursor.visible = true;
+				player.StopGathering();
 			} else {
 				Cursor.lockState = CursorLockMode.Locked;
 				Cursor.visible = false;
@@ -402,6 +403,22 @@ public class Inventory : MonoBehaviour {
 		}
 	}
 
+	public void GetHeldItemInfo(out Item item, out int stackSize) //very nice, simple function that uses other functions
+	{
+		item = slots[selectedHotbarSlot].currentItem;
+		stackSize = slots[selectedHotbarSlot].stackCount;
+	}
+
+	public int GetHeldItemStack() //very nice, simple function that uses other functions
+	{
+		return slots[selectedHotbarSlot].stackCount;
+	}
+
+	public Item GetHeldItem() //very nice, simple function that uses other functions
+	{
+		return slots[selectedHotbarSlot].currentItem;
+	}
+
 	public void TakeHeldItem(out Item item, out int stackTaken, int amountTaken) //very nice, simple function that uses other functions
 	{
 		item = slots[selectedHotbarSlot].currentItem;
@@ -443,6 +460,19 @@ public class Inventory : MonoBehaviour {
         {
 			stackTaken = amountTaken;
         }
+	}
+
+
+	public GameObject GetHandObject()
+	{
+		if (currentSelectedItem.handPrefab)
+		{
+			return currentSelectedItem.handPrefab;
+		}
+		else
+		{
+			return currentSelectedItem.prefab;
+		}
 	}
 
 	/* Trying to make a better system

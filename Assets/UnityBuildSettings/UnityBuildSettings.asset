@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: UnityBuildSettings
   m_EditorClassIdentifier: 
   _basicSettings:
-    baseBuildFolder: C:\Users\Rugbu\Desktop\Adrift Super Unity Builder
-    buildPath: Adrift v0.2.9 $PLATFORM
+    baseBuildFolder: C:\Users\micro\OneDrive\Documents\Redrift Builds
+    buildPath: Redrift v1.3 $PLATFORM
     openFolderPostBuild: 1
   _productParameters:
-    buildCounter: 4
-    lastGeneratedVersion: 1.0.1480.2911
+    buildCounter: 9
+    lastGeneratedVersion: 1.0.2255.4989
     version: 1.0.$DAYSSINCE("January 1, 2015").$SECONDS
     autoGenerate: 1
   _releaseTypeList:
@@ -71,13 +71,13 @@ MonoBehaviour:
       architectures:
       - target: 25
         name: Linux Universal
-        enabled: 1
+        enabled: 0
       - target: 17
         name: Linux x86
         enabled: 0
       - target: 24
         name: Linux x64
-        enabled: 0
+        enabled: 1
       variants: []
       platformName: Linux
       binaryNameFormat: '{0}.x86'
@@ -97,9 +97,9 @@ MonoBehaviour:
       targetGroup: 13
   _projectConfigurations:
     configSet:
-      _Buckets: ffffffff00000000ffffffff04000000ffffffff08000000ffffffff0700000005000000ffffffffffffffffffffffffffffffff03000000ffffffffffffffffffffffff
-      _HashCodes: 45cfcd621b9d631c314fbf2bcc0410707caa361dac1c022c7b864a10f11a9b2ce7bf39240000000000000000000000000000000000000000000000000000000000000000
-      _Next: ffffffffffffffff01000000ffffffffffffffffffffffffffffffff06000000020000000000000000000000000000000000000000000000000000000000000000000000
+      _Buckets: ffffffffffffffffffffffff08000000ffffffff0300000006000000ffffffffffffffff07000000ffffffff04000000ffffffffffffffffffffffffffffffffffffffff
+      _HashCodes: 77a7aa19510e9f59ed43d334ba55b93b134e5c09fe3787566d38f6476da5e2352d6dfd480000000000000000000000000000000000000000000000000000000000000000
+      _Next: ffffffffffffffffffffffff00000000ffffffff0100000002000000ffffffff050000000000000000000000000000000000000000000000000000000000000000000000
       _Count: 9
       _Version: 9
       _FreeList: -1
@@ -109,7 +109,7 @@ MonoBehaviour:
       - Release/PC
       - Release/OSX/OSX
       - Release/OSX
-      - Release/Linux/Linux Universal
+      - Release/Linux/Linux x64
       - Release/Linux
       - Release/WebGL/WebGL
       - Release/WebGL
@@ -137,7 +137,7 @@ MonoBehaviour:
         childKeys: []
       - enabled: 1
         childKeys:
-        - Release/Linux/Linux Universal
+        - Release/Linux/Linux x64
       - enabled: 1
         childKeys: []
       - enabled: 1

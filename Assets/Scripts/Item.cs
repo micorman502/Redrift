@@ -5,7 +5,7 @@ using UnityEngine;
 [CreateAssetMenu]
 public class Item : ScriptableObject {
 	public enum ItemType {Resource, Tool, Structure, Food, Weapon}
-	public enum ItemSubType {Base, Furnace, Conveyor, Storage} //Later use a custom editor to make subtypes make more sense
+	public enum ItemSubType {Base, Furnace, Conveyor, Storage, Incinerator} //Later use a custom editor to make subtypes make more sense
 	public string itemName;
 	public string itemDescription;
 	public ItemType type;
@@ -16,6 +16,7 @@ public class Item : ScriptableObject {
 	public float timeToGather = 0.25f;
 	public Vector3 handRotation;
 	public Vector3 handScale = Vector3.one;
+	public GameObject handPrefab;
 	public int maxStackCount;
 	public GameObject previewPrefab;
 	public float speed;

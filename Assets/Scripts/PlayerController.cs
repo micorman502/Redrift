@@ -7,7 +7,7 @@ using UnityEngine.AI;
 using UnityEngine.PostProcessing;
 using EZCameraShake;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, ITakeFallDamage
 {
 
 	public WorldManager.WorldType currentWorld;
@@ -21,8 +21,7 @@ public class PlayerController : MonoBehaviour
 
 	[HideInInspector] public Rigidbody rb;
 
-	public float mouseSensitivityX;
-	public float mouseSensitivityY;
+	public float mouseSensitivity;
 	public float walkSpeed;
 	public float runSpeed;
 	public float jumpForce;
@@ -31,9 +30,7 @@ public class PlayerController : MonoBehaviour
 	public float interactRange = 2f;
 	public Item fuelItem;
 
-	public GameObject progressContainer;
-	public Image progressImage;
-	public Text progressText;
+	public ProgressManager progressUI;
 
 	public Text noticeText;
 
@@ -59,6 +56,7 @@ public class PlayerController : MonoBehaviour
 
 	private float verticalLookRotation;
 
+	private float smoothedYVelocity;
 	private float currentMoveSpeed;
 	private Vector3 moveAmount;
 	private Vector3 smoothMoveVelocity;
@@ -201,7 +199,7 @@ public class PlayerController : MonoBehaviour
 			{
 				Destroy(currentHandObj);
 			}
-			GameObject obj = Instantiate(inventory.currentSelectedItem.prefab, handContainer.transform) as GameObject;
+			GameObject obj = Instantiate(inventory.GetHandObject(), handContainer.transform) as GameObject;
 			obj.transform.Rotate(inventory.currentSelectedItem.handRotation);
 			obj.transform.localScale = inventory.currentSelectedItem.handScale;
 			Rigidbody objRB = obj.GetComponent<Rigidbody>();
@@ -310,8 +308,8 @@ public class PlayerController : MonoBehaviour
 
 		if (!lockLook)
 		{
-			transform.Rotate(Vector3.up * Input.GetAxisRaw("Mouse X") * mouseSensitivityX);
-			verticalLookRotation += Input.GetAxisRaw("Mouse Y") * mouseSensitivityY;
+			transform.Rotate(Vector3.up * Input.GetAxisRaw("Mouse X") * mouseSensitivity);
+			verticalLookRotation += Input.GetAxisRaw("Mouse Y") * mouseSensitivity;
 			verticalLookRotation = Mathf.Clamp(verticalLookRotation, -90, 90);
 			playerCameraHolder.transform.localEulerAngles = Vector3.left * verticalLookRotation;
 		}
@@ -604,24 +602,48 @@ public class PlayerController : MonoBehaviour
 							ItemHolder holder = itemHandler.GetComponent<ItemHolder>();
 							if (currentItemExists)
 							{
-									inventory.TakeHeldItem(out Item thisItem, out int stackTaken, 1);
-									if (stackTaken > 0)
-									{
-									bool failed = false;
-										holder.AddItem(thisItem, failed);
-										if (failed)
-                                        {
-											inventory.AddItem(thisItem, 1);
-                                        }
-									}
-							} else
-                            {
-								if (holder.GetItem())
+								if (inventory.GetHeldItemStack() == 1)
                                 {
+									StopInteractKeyRepeat();
+                                }
+								inventory.TakeHeldItem(out Item thisItem, out int stackTaken, 1);
+								if (stackTaken > 0)
+								{
+									bool failed = false;
+									holder.AddItem(thisItem, 1, out failed);
+									if (failed)
+									{
+										inventory.AddItem(thisItem, 1);
+									}
+									else
+									{
+										
+									}
+								}
+							}
+							else
+							{
+								if (holder.GetItem())
+								{
 									inventory.AddItem(holder.GetItem(), 1);
 									holder.RemoveItem(1);
-                                }
-                            }
+								}
+							}
+						}
+					} else if (itemHandler.item.type == Item.ItemType.Structure && itemHandler.item.subType == Item.ItemSubType.Incinerator)
+                    {
+						noticeText = "Hold [E] to pick up, [F] to incinerate item";
+						if (interactKeyPressed)
+						{
+							Incinerator incinerator = itemHandler.GetComponent<Incinerator>();
+							if (incinerator)
+							{
+								inventory.TakeHeldItem(out Item thisItem, out int stackTaken, 1);
+								if (stackTaken > 0)
+								{
+									incinerator.IncinerateEffects();
+								}
+							}
 						}
 					}
 					else
@@ -630,16 +652,15 @@ public class PlayerController : MonoBehaviour
 					}
 					if (Input.GetButton("PickUp"))
 					{
-						if (!pickingUp || (pickingUp && !progressContainer.activeSelf))
+						if (!pickingUp || (pickingUp && !progressUI.UIEnabled()))
 						{
-							progressContainer.SetActive(true);
+							progressUI.EnableUI();
 							pickingUp = true;
 						}
 						else
 						{
 							pickingUpTime += Time.deltaTime;
-							progressImage.fillAmount = pickingUpTime / itemHandler.item.timeToGather;
-							progressText.text = (itemHandler.item.timeToGather - pickingUpTime).ToString("0.0");
+							progressUI.UpdateProgress(pickingUpTime / itemHandler.item.timeToGather, (itemHandler.item.timeToGather - pickingUpTime));
 
 							if (pickingUpTime >= itemHandler.item.timeToGather)
 							{
@@ -656,7 +677,7 @@ public class PlayerController : MonoBehaviour
 										q++;
 									}
 								}
-								if (itemHandler.item.id == 6)
+								if (itemHandler.item.type == Item.ItemType.Structure && itemHandler.item.subType == Item.ItemSubType.Furnace)
 								{ // Is it a furnace?
 									Furnace furnace = itemHandler.GetComponent<Furnace>();
 									if (furnace)
@@ -670,8 +691,17 @@ public class PlayerController : MonoBehaviour
 										}
 									}
 								}
-								pickingUpTime = 0f;
-								progressImage.fillAmount = 0f;
+								if (itemHandler.item.type == Item.ItemType.Structure && itemHandler.item.subType == Item.ItemSubType.Storage)
+                                {
+									ItemHolder holder = itemHandler.GetComponent<ItemHolder>();
+									if (holder.GetItem())
+									{
+										inventory.AddItem(holder.GetItem(), holder.ItemStack());
+									}
+                                }
+									pickingUpTime = 0f;
+								progressUI.UpdateProgress(0, 0);
+								//progressImage.fillAmount = 0f;
 								inventory.Pickup(itemHandler);
 								audioManager.Play("Grab");
 							}
@@ -681,8 +711,8 @@ public class PlayerController : MonoBehaviour
 					{
 						hideNoticeText = true;
 						pickingUpTime = 0f;
-						progressImage.fillAmount = 0f;
-						progressContainer.SetActive(false);
+						progressUI.UpdateProgress(0, 0);
+						progressUI.DisableUI();
 						pickingUp = false;
 					}
 				}
@@ -704,10 +734,10 @@ public class PlayerController : MonoBehaviour
 						if (canMine)
 						{
 							hideNoticeText = true;
-							if (!gathering || (gathering && !progressContainer.activeSelf))
+							if (!gathering || (gathering && !progressUI.UIEnabled()))
 							{
 								gathering = true;
-								progressContainer.SetActive(true);
+								progressUI.EnableUI();
 							}
 							else
 							{
@@ -723,8 +753,7 @@ public class PlayerController : MonoBehaviour
 								{
 									currentResource = target.GetComponent<ResourceHandler>();
 								}
-								progressImage.fillAmount = gatheringTime / (currentResource.resource.gatherTime / multiplier);
-								progressText.text = (currentResource.resource.gatherTime / multiplier - gatheringTime).ToString("0.0");
+								progressUI.UpdateProgress(gatheringTime / (currentResource.resource.gatherTime / multiplier), currentResource.resource.gatherTime / multiplier - gatheringTime);
 								if (gatheringTime >= currentResource.resource.gatherTime / multiplier)
 								{
 									int i = 0;
@@ -732,13 +761,13 @@ public class PlayerController : MonoBehaviour
 									{
 										if (Random.Range(0f, 1f) <= currentResource.resource.chances[i])
 										{
-											inventory.AddItem(item, hasTool ? inventory.currentSelectedItem.gatherAmount : 1);
+												inventory.AddItem(item, currentResource.Gather(hasTool ? inventory.currentSelectedItem.gatherAmount : 1));
 										}
 										i++;
 									}
 									gatheringTime = 0f;
-									progressImage.fillAmount = 0f;
-									currentResource.Gather(hasTool ? inventory.currentSelectedItem.gatherAmount : 1); // CURRENTLY GATHERS GATHER AMOUNT EVEN IF RESOURCE HAS LESS THAN THAT AMOUNT LEFT
+									progressUI.UpdateProgress(0, 0);
+									//progressImage.fillAmount = 0f;
 									CameraShaker.Instance.ShakeOnce(2f, 3f, 0.1f, 0.3f);
 								}
 							}
@@ -752,7 +781,15 @@ public class PlayerController : MonoBehaviour
 						CancelGatherAndPickup();
 						hideNoticeText = true;
 					}
-				}
+				} else if (target.CompareTag("WorldButton") && distanceToTarget <= interactRange && !inventory.placingStructure)
+                {
+					WorldButton wb = target.GetComponent<WorldButton>();
+					noticeText = wb.DisplayText();
+					if (Input.GetButtonDown("Interact"))
+                    {
+						wb.Interact();
+                    }
+                }
 				else if (gathering || pickingUp)
 				{
 					CancelGatherAndPickup();
@@ -776,9 +813,9 @@ public class PlayerController : MonoBehaviour
 				}
 				target = null;
 				hideNoticeText = true;
-				if (progressContainer.activeSelf)
+				if (progressUI.UIEnabled())
 				{
-					progressContainer.SetActive(false);
+					progressUI.DisableUI();
 				}
 			}
 		}
@@ -847,6 +884,11 @@ public class PlayerController : MonoBehaviour
 		}
     }
 
+	void StopInteractKeyRepeat () //mainly for preventing storage boxes from having some... weird behaviour
+    {
+		interactKeyHeldTime = Time.time + interactKeyHeldDelay;
+	}
+
 	public void LoadCreativeMode()
 	{
 		mode = 1;
@@ -900,17 +942,7 @@ public class PlayerController : MonoBehaviour
 
 	void OnCollisionEnter(Collision col)
 	{
-		if (col.relativeVelocity.magnitude >= impactVelocityToDamage && !dead && mode != 1)
-		{
-			if (ignoreFallDamage)
-			{
-				Invoke("ResetIgnoreFallDamage", 1f);
-			}
-			else
-			{
-				TakeDamage(col.relativeVelocity.magnitude * impactDamage);
-			}
-		}
+		//WAS used for taking fall damage
 	}
 
 	void OnTriggerEnter(Collider other)
@@ -1035,6 +1067,30 @@ public class PlayerController : MonoBehaviour
 		HealthChange();
 	}
 
+	public void TakeFallDamage (float amount)
+    {
+		TakeDamage(amount);
+    }
+
+	public void TakeFallDamage(GameObject source)
+    {
+		NegateFallDamage nfd = source.GetComponent<NegateFallDamage>();
+		if (nfd && !nfd.NegateDamage() || !nfd)
+		{
+			if (-smoothedYVelocity >= impactVelocityToDamage && !dead && mode != 1)
+			{
+				if (ignoreFallDamage)
+				{
+					Invoke("ResetIgnoreFallDamage", 1f);
+				}
+				else
+				{
+					TakeDamage(Mathf.Pow(-smoothedYVelocity * impactDamage, 1.39f));
+				}
+			}
+		}
+	}
+
 	public void TakeEffectDamage(float amount)
 	{
 		health -= amount;
@@ -1078,10 +1134,18 @@ public class PlayerController : MonoBehaviour
 	{
 		gatheringTime = 0f;
 		pickingUpTime = 0f;
-		progressImage.fillAmount = 0f;
-		progressContainer.SetActive(false);
+		progressUI.UpdateProgress(0, 0);
+		progressUI.DisableUI();
 		gathering = false;
 		pickingUp = false;
+	}
+
+	public void StopGathering ()
+    {
+		gatheringTime = 0f;
+		progressUI.UpdateProgress(0, 0);
+		progressUI.DisableUI();
+		gathering = false;
 	}
 
 	void EnterLightWorld()
@@ -1227,5 +1291,6 @@ public class PlayerController : MonoBehaviour
 		{
 			rb.MovePosition(rb.position + (transform.TransformDirection(moveAmount) * Time.fixedDeltaTime));
 		}
+		smoothedYVelocity = (smoothedYVelocity + rb.velocity.y) / 2;
 	}
 }

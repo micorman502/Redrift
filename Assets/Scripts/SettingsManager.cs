@@ -158,8 +158,7 @@ public class SettingsManager : MonoBehaviour {
 
 	public void SetMouseSensitivity(float n) {
 		if(!mainMenu) {
-			player.mouseSensitivityX = n;
-			player.mouseSensitivityY = n;
+			player.mouseSensitivity = n;
 		}
 		mouseSensitivityText.text = "Sensitivity: " + n.ToString("0.0");
 		PlayerPrefs.SetFloat("Settings.MouseSensitivity", n);

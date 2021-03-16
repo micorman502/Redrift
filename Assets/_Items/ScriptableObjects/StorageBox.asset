@@ -17,7 +17,7 @@ MonoBehaviour:
   type: 2
   subType: 3
   id: 38
-  icon: {fileID: 21300000, guid: ed096614aaf674a4587057454853681e, type: 3}
+  icon: {fileID: 21300000, guid: aeb1a7c2361eb744eb99b8c83e6b5384, type: 3}
   prefab: {fileID: 3820227965125936527, guid: 91f310a224de06f4bb3854717056af7d, type: 3}
   timeToGather: 0.25
   handRotation: {x: 0, y: 0, z: 0}

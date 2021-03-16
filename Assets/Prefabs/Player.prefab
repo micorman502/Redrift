@@ -222,7 +222,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 1, g: 1, b: 1, a: 0.378}
+      maxColor: {r: 1, g: 1, b: 1, a: 0.89411765}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -283,9 +283,9 @@ ParticleSystem:
         m_NumAlphaKeys: 2
     startSize:
       serializedVersion: 2
-      minMaxState: 0
-      scalar: 0.1
-      minScalar: 1
+      minMaxState: 3
+      scalar: 0.12
+      minScalar: 0.08
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -336,7 +336,7 @@ ParticleSystem:
         m_RotationOrder: 4
     startSizeY:
       serializedVersion: 2
-      minMaxState: 0
+      minMaxState: 3
       scalar: 1
       minScalar: 1
       maxCurve:
@@ -389,7 +389,7 @@ ParticleSystem:
         m_RotationOrder: 4
     startSizeZ:
       serializedVersion: 2
-      minMaxState: 0
+      minMaxState: 3
       scalar: 1
       minScalar: 1
       maxCurve:
@@ -19585,8 +19585,7 @@ MonoBehaviour:
   damagePanelAnim: {fileID: 0}
   infoText: {fileID: 0}
   rb: {fileID: 0}
-  mouseSensitivityX: 3.5
-  mouseSensitivityY: 3.5
+  mouseSensitivity: 0
   walkSpeed: 5
   runSpeed: 9
   jumpForce: 30000
@@ -19596,9 +19595,7 @@ MonoBehaviour:
     m_Bits: 4294967295
   interactRange: 2.5
   fuelItem: {fileID: 11400000, guid: e605b7711cb22d140805767d6575e6ca, type: 2}
-  progressContainer: {fileID: 0}
-  progressImage: {fileID: 0}
-  progressText: {fileID: 0}
+  progressUI: {fileID: 0}
   noticeText: {fileID: 0}
   purgatorySpawn: {fileID: 0}
   purgatoryRespawnTimeText: {fileID: 0}
@@ -24445,6 +24442,7 @@ GameObject:
   - component: {fileID: 65877671100579226}
   - component: {fileID: 23721468787154482}
   - component: {fileID: 114258264205402386}
+  - component: {fileID: 8120853396600867673}
   m_Layer: 2
   m_Name: GroundCheck
   m_TagString: Untagged
@@ -24485,8 +24483,8 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1, y: 1.2230043, z: 1}
+  m_Center: {x: 0, y: -0.11150215, z: 0}
 --- !u!23 &23721468787154482
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -24538,6 +24536,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerController: {fileID: 114794400459759650}
+--- !u!114 &8120853396600867673
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1393527212680562}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dfe1e208f641d54b9665c69ee8a886f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentColliders: []
+  parent: {fileID: 114794400459759650}
 --- !u!1 &1729225956712484
 GameObject:
   m_ObjectHideFlags: 0

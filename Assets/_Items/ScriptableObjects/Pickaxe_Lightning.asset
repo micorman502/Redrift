@@ -15,16 +15,18 @@ MonoBehaviour:
   itemName: Lightning Pickaxe
   itemDescription: 
   type: 1
+  subType: 0
   id: 21
   icon: {fileID: 21300000, guid: 65c36766c94776d4bb5269114c47b3ca, type: 3}
   prefab: {fileID: 1676383414774214, guid: 1d59e4b88b0c7a242970325ab33e104f, type: 3}
   timeToGather: 0.1
   handRotation: {x: 119.737, y: 7.760986, z: 82.239}
   handScale: {x: 1, y: 1, z: 1}
+  handPrefab: {fileID: 0}
   maxStackCount: 1
   previewPrefab: {fileID: 0}
   speed: 4
-  gatherAmount: 3
+  gatherAmount: 2
   toolToughness: 4
   power: 0
   fuel: 0

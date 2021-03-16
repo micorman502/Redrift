@@ -15,6 +15,7 @@ MonoBehaviour:
   itemName: Incinerator
   itemDescription: Permanently destroy items.
   type: 2
+  subType: 4
   id: 31
   icon: {fileID: 21300000, guid: e7e772fdcd608544cae470b5e6ad93af, type: 3}
   prefab: {fileID: 1552388535253870, guid: 29e13cd9919fc8a4c9a68e931d746ebe, type: 3}
@@ -26,6 +27,7 @@ MonoBehaviour:
     type: 3}
   speed: 0
   gatherAmount: 0
+  toolToughness: 0
   power: 0
   fuel: 0
   smeltItem: {fileID: 0}
