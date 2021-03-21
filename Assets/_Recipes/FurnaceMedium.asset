@@ -15,7 +15,7 @@ MonoBehaviour:
   inputs:
   - {fileID: 11400000, guid: 048288baa01cb144ba009e21c4220e17, type: 2}
   - {fileID: 11400000, guid: cb2b8f9de15633642b25d8a3e5609e34, type: 2}
-  - {fileID: 11400000, guid: e605b7711cb22d140805767d6575e6ca, type: 2}
+  - {fileID: 11400000, guid: 221124a2341142445ac06a74d0443d60, type: 2}
   amounts: 060000000300000002000000
   replacementItems: []
   replacementItemAmounts: 

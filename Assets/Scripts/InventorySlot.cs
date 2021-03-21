@@ -80,6 +80,7 @@ public class InventorySlot : MonoBehaviour {
 		slotImage.sprite = emptySlotSprite;
 		stackCount = 0;
 		amountText.gameObject.SetActive(false);
+		anim.Play(); 
 	}
 
 	public void OnItemClick() {

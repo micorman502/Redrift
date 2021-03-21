@@ -19,8 +19,10 @@ public class MenuSaveManager : MonoBehaviour {
 	[SerializeField] InputField saveNameInputField;
 	[SerializeField] Dropdown saveDifficultyDropdown;
 	[SerializeField] Dropdown saveModeDropdown;
+	[SerializeField] Dropdown saveModifierDropdown;
 	[SerializeField] Text difficultyBlurb;
 	[SerializeField] Text modeBlurb;
+	[SerializeField] Text modifierBlurb;
 	[SerializeField] Text saveErrorText;
 
 	SaveManager saveManager;
@@ -37,6 +39,8 @@ public class MenuSaveManager : MonoBehaviour {
 
 	string[] modeBlurbs = {"Survival: Survive on the island.",
 		"Creative: Health and hunger disabled, with an infinite supply of all items and the ability to fly."};
+	string[] modifierBlurbs = {"Default: Normal Adrift Gameplay.",
+		"Apocalypse: It is too late. Meteoroids are bombarding the planet, and destroying all they can."};
 
 	void Awake() {
 		menuManager = FindObjectOfType<MenuManager>();
@@ -52,9 +56,11 @@ public class MenuSaveManager : MonoBehaviour {
 		RenderList();
 		OnChangeDifficulty();
 		OnChangeMode();
+		OnChangeModifier();
 	}
 
 	void RenderList() {
+		CreateNewSaveButton(); //Opposed to Adrift, this is at the top. The new save button should be at the top, otherwise lots of scrolling ensues.
 		saveNameInputField.text = "World " + (info.Length + 1);
 		for(int i = 0; i < info.Length; i++) {
 			int saveNum = i;
@@ -66,8 +72,6 @@ public class MenuSaveManager : MonoBehaviour {
 			Button confirmDeleteButton = go.transform.Find("ConfirmDeleteButton").GetComponent<Button>();
 			confirmDeleteButton.onClick.AddListener(delegate { DeleteSave(saveNum); });
 		}
-
-		CreateNewSaveButton();
 	}
 
 	void ClearList() {
@@ -84,7 +88,8 @@ public class MenuSaveManager : MonoBehaviour {
 		saveListItems.Add(go);
 		go.GetComponentInChildren<Text>().text = "New Save";
 		go.GetComponent<Button>().onClick.AddListener(delegate { OpenNewSaveMenu(); });
-		go.GetComponent<Image>().color = Color.Lerp(Color.green, Color.white, 0.5f);
+		go.GetComponent<Image>().color = new Color(0, 0, 0, 0);
+		go.GetComponentInChildren<Text>().color = Color.green;
 		Destroy(go.transform.Find("DeleteButton").gameObject);
 		RectTransform rt = go.transform.Find("SaveText").GetComponent<RectTransform>();
 		rt.offsetMin = Vector2.zero;
@@ -129,6 +134,11 @@ public class MenuSaveManager : MonoBehaviour {
 		modeBlurb.text = modeBlurbs[saveModeDropdown.value];
 	}
 
+	public void OnChangeModifier()
+    {
+		modifierBlurb.text = modifierBlurbs[saveModifierDropdown.value];
+    }
+
 	public void CreateNewSave() {
 		if(string.IsNullOrEmpty(saveNameInputField.text)) {
 			saveErrorText.text = "Please enter a valid name.";
@@ -147,8 +157,26 @@ public class MenuSaveManager : MonoBehaviour {
 		persistentData.newSaveName = saveNameInputField.text;
 		persistentData.difficulty = saveDifficultyDropdown.value;
 		persistentData.mode = saveModeDropdown.value;
+		persistentData.gameModifier = GetModifier(saveModifierDropdown.value);
 		persistentData.loadSave = false;
 		persistentData.saveToLoad = info.Length;
 		menuManager.LoadScene("World");
 	}
+
+	public string GetModifier (int modifierIn)
+    {
+		//temporary... until more are added
+		if (modifierIn == 0)
+		{
+			return null;
+		}
+		else if (modifierIn == 1)
+		{
+			return "apocalypse";
+		}
+		else
+		{
+			return null;
+		}
+    }
 }

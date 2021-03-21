@@ -14,6 +14,8 @@ GameObject:
   - component: {fileID: 114932710934780842}
   - component: {fileID: 82349076515235410}
   - component: {fileID: 208470062905171278}
+  - component: {fileID: 8267210452924739573}
+  - component: {fileID: 5406158622413482326}
   m_Layer: 0
   m_Name: ConveyorBelt
   m_TagString: Item
@@ -88,13 +90,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speeds:
   - 0
-  - 0.1
   - 0.25
   - 0.5
   - 1
   - 2
   - 4
-  - 8
   speedNum: 0
   tellParent: {fileID: 114545526320037542}
 --- !u!82 &82349076515235410
@@ -209,6 +209,32 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: 0, y: 0, z: 0}
   m_TimeToStationary: 0.1
+--- !u!65 &8267210452924739573
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1070651816951194}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 0.2, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!65 &5406158622413482326
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1070651816951194}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 0.33, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1264706960894976
 GameObject:
   m_ObjectHideFlags: 0
@@ -224,7 +250,7 @@ GameObject:
   - component: {fileID: 136889952243885564}
   m_Layer: 0
   m_Name: Cylinder_003
-  m_TagString: Item
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -314,7 +340,7 @@ CapsuleCollider:
   m_GameObject: {fileID: 1264706960894976}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_Enabled: 1
+  m_Enabled: 0
   m_Radius: 0.09
   m_Height: 1
   m_Direction: 0
@@ -334,7 +360,7 @@ GameObject:
   - component: {fileID: 136185768725371474}
   m_Layer: 0
   m_Name: Cylinder
-  m_TagString: Item
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -424,7 +450,7 @@ CapsuleCollider:
   m_GameObject: {fileID: 1279171203915930}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_Enabled: 1
+  m_Enabled: 0
   m_Radius: 0.09
   m_Height: 1
   m_Direction: 0
@@ -443,7 +469,7 @@ GameObject:
   - component: {fileID: 114545526320037542}
   m_Layer: 0
   m_Name: ConveyorTrigger
-  m_TagString: Item
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -496,6 +522,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentColliders: []
+  parent: {fileID: 4617926048861842}
+  message: debug
 --- !u!1 &1776343923491406
 GameObject:
   m_ObjectHideFlags: 0
@@ -511,7 +539,7 @@ GameObject:
   - component: {fileID: 65202382620449242}
   m_Layer: 0
   m_Name: ConveyorSides
-  m_TagString: Item
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -585,7 +613,7 @@ BoxCollider:
   m_GameObject: {fileID: 1776343923491406}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_Size: {x: 0.1, y: 1.0000002, z: 0.20000005}
   m_Center: {x: -0.45, y: 0, z: 0}
@@ -598,7 +626,7 @@ BoxCollider:
   m_GameObject: {fileID: 1776343923491406}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_Size: {x: 0.1, y: 1.0000002, z: 0.20000005}
   m_Center: {x: 0.45, y: 0, z: 0}
@@ -617,7 +645,7 @@ GameObject:
   - component: {fileID: 136430722338769000}
   m_Layer: 0
   m_Name: Cylinder_004
-  m_TagString: Item
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -707,7 +735,7 @@ CapsuleCollider:
   m_GameObject: {fileID: 1854468044824894}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_Enabled: 1
+  m_Enabled: 0
   m_Radius: 0.09
   m_Height: 1
   m_Direction: 0
@@ -727,7 +755,7 @@ GameObject:
   - component: {fileID: 136893089832518790}
   m_Layer: 0
   m_Name: Cylinder_001
-  m_TagString: Item
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -817,7 +845,7 @@ CapsuleCollider:
   m_GameObject: {fileID: 1882108324097910}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_Enabled: 1
+  m_Enabled: 0
   m_Radius: 0.09
   m_Height: 1
   m_Direction: 0
@@ -837,7 +865,7 @@ GameObject:
   - component: {fileID: 136907298151027732}
   m_Layer: 0
   m_Name: Cylinder_002
-  m_TagString: Item
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -927,7 +955,7 @@ CapsuleCollider:
   m_GameObject: {fileID: 1910351313482278}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_Enabled: 1
+  m_Enabled: 0
   m_Radius: 0.09
   m_Height: 1
   m_Direction: 0

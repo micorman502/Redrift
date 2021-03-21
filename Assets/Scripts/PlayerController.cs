@@ -205,7 +205,7 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 			Rigidbody objRB = obj.GetComponent<Rigidbody>();
 			if (objRB)
 			{
-				objRB.isKinematic = true;
+				Destroy(objRB);
 			}
 			Collider[] cols = obj.GetComponentsInChildren<Collider>();
 			if (cols.Length > 0)
@@ -502,7 +502,7 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 							door.ToggleOpen();
 						}
 					}
-					else if (itemHandler.item.id == 25)
+					else if (itemHandler.item.subType == Item.ItemSubType.Conveyor)
 					{ // Conveyor belt
 						ConveyorBelt conveyor = itemHandler.GetComponent<ConveyorBelt>();
 						noticeText = "Hold [E] to pick up, [F] to change speed. Current speed is " + conveyor.speeds[conveyor.speedNum];
@@ -578,6 +578,7 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 								if (inventory.slots[inventory.selectedHotbarSlot].currentItem.fuel > 0 || inventory.slots[inventory.selectedHotbarSlot].currentItem.smeltItem)
 								{
 									inventory.TakeHeldItem(out Item thisItem, out int stackTaken, 1);
+									inventory.InventoryUpdate();
 									furnace.AddItem(thisItem, stackTaken);
 								}
 							}
@@ -620,6 +621,7 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 										
 									}
 								}
+								inventory.InventoryUpdate();
 							}
 							else
 							{
@@ -627,6 +629,7 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 								{
 									inventory.AddItem(holder.GetItem(), 1);
 									holder.RemoveItem(1);
+									inventory.InventoryUpdate();
 								}
 							}
 						}
@@ -958,6 +961,14 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 				}
 			}
 		}
+		if (other.CompareTag("Damage Player"))
+        {
+			PlayerDamage damage = other.GetComponent<PlayerDamage>();
+			if (damage)
+            {
+				TakeDamage(damage.GetDamage());
+            }
+        }
 	}
 
 	void OnTriggerStay(Collider other)
@@ -1053,18 +1064,21 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 
 	public void TakeDamage(float amount)
 	{
-		health -= amount;
-		CameraShaker.Instance.ShakeOnce(4f, 5f, 0.1f, 0.5f);
-		damagePanelAnim.Play();
-		if (health <= 0 && !dead)
+		if (mode != 1)
 		{
-			Die();
+			health -= amount;
+			CameraShaker.Instance.ShakeOnce(4f, 5f, 0.1f, 0.5f);
+			damagePanelAnim.Play();
+			if (health <= 0 && !dead)
+			{
+				Die();
+			}
+			else if (health < 0f)
+			{
+				health = 0f;
+			}
+			HealthChange();
 		}
-		else if (health < 0f)
-		{
-			health = 0f;
-		}
-		HealthChange();
 	}
 
 	public void TakeFallDamage (float amount)

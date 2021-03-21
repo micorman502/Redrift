@@ -7,6 +7,7 @@ public class AchievementManager : MonoBehaviour {
 	public Transform achievementContainer;
 	public Transform acievementList;
 	public GameObject achievementPrefab;
+	public Color fulfillColour;
 
 	bool[] hasAchievements;
 	public Achievement[] achievements;
@@ -21,18 +22,18 @@ public class AchievementManager : MonoBehaviour {
 		hasAchievements = new bool[achievements.Length];
 		achievementHandlers = new AchievementHandler[achievements.Length];
 
-		for(int i = 0; i < achievements.Length; i++) {
+		for(int i = 0; i < achievements.Length; i++) { //init Achievement UI
 			GameObject achievementObj = Instantiate(achievementPrefab, acievementList) as GameObject;
 			AchievementHandler handler = achievementObj.GetComponent<AchievementHandler>();
 			handler.achievementNameText.text = achievements[i].achievementName;
-			handler.achievementDescText.text = achievements[i].achievementDesc;
+			handler.achievementDescText.text = "???";
 			handler.achievementIconImage.sprite = achievements[i].achievementIcon;
 			handler.achievement = achievements[i];
 			achievementHandlers[i] = handler;
 		}
 	}
 
-	public void ShowAchievement(int achievementID) {
+	public void ShowAchievement(int achievementID) { //show this achievement as a popup.
 		GameObject achievementObj = Instantiate(achievementPrefab, achievementContainer) as GameObject;
 		AchievementHandler handler = achievementObj.GetComponent<AchievementHandler>();
 		int i = 0;
@@ -58,13 +59,13 @@ public class AchievementManager : MonoBehaviour {
 
 			foreach(AchievementHandler handler in achievementHandlers) {
 				if(handler.achievement.achievementID == achievementIDs[i]) {
-					handler.backgroundImage.color = Color.green;
+					//handler.backgroundImage.color = Color.green;
 				}
 			}
 		}
 	}
 
-	public void GetAchievement(int _achievementID) {
+	public void GetAchievement(int _achievementID) { //Update associated UI when you get an achievement.
 		if(!hasAchievements[_achievementID]) {
 			ShowAchievement(_achievementID);
 
@@ -79,7 +80,11 @@ public class AchievementManager : MonoBehaviour {
 
 			foreach(AchievementHandler handler in achievementHandlers) { // Set the achievement background to green in the achievement UI
 				if(handler.achievement.achievementID == _achievementID) {
-					handler.backgroundImage.color = Color.green;
+					if (handler.backgroundImage)
+					{
+						handler.achievementDescText.color = fulfillColour;
+						handler.achievementDescText.text = achievements[i].achievementDesc;
+					}
 				}
 			}
 		}

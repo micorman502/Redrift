@@ -26,8 +26,8 @@ public class ConveyorBelt : MonoBehaviour {
 	}
 
 	void FixedUpdate() {
-		if(tellParent.currentColliders.Count > 0 && speeds[speedNum] != 0f) {
-			foreach(Collider col in tellParent.currentColliders) {
+		if(tellParent.Colliders().Length > 0 && speeds[speedNum] != 0f) {
+			foreach(Collider col in tellParent.Colliders()) {
 				if(col) {
 					Rigidbody itemRB = col.GetComponent<Rigidbody>();
 					if(!itemRB) {

@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _basicSettings:
     baseBuildFolder: C:\Users\micro\OneDrive\Documents\Redrift Builds
-    buildPath: Redrift v1.3 $PLATFORM
+    buildPath: Redrift v1.6 $PLATFORM
     openFolderPostBuild: 1
   _productParameters:
-    buildCounter: 9
-    lastGeneratedVersion: 1.0.2255.4989
+    buildCounter: 10
+    lastGeneratedVersion: 1.0.2270.2639
     version: 1.0.$DAYSSINCE("January 1, 2015").$SECONDS
     autoGenerate: 1
   _releaseTypeList:
@@ -65,7 +65,7 @@ MonoBehaviour:
       binaryNameFormat: '{0}.app'
       dataDirNameFormat: '{0}.app/Contents'
       targetGroup: 1
-    - enabled: 1
+    - enabled: 0
       distributionList:
         distributions: []
       architectures:
@@ -95,13 +95,27 @@ MonoBehaviour:
       binaryNameFormat: '{0}'
       dataDirNameFormat: '{0}_Data'
       targetGroup: 13
+    - enabled: 1
+      distributionList:
+        distributions:
+        - distributionName: DistributionName
+          enabled: 1
+      architectures:
+      - target: 24
+        name: Linux x64
+        enabled: 0
+      variants: []
+      platformName: Linux
+      binaryNameFormat: '{0}.x86'
+      dataDirNameFormat: '{0}_Data'
+      targetGroup: 1
   _projectConfigurations:
     configSet:
-      _Buckets: ffffffffffffffffffffffff08000000ffffffff0300000006000000ffffffffffffffff07000000ffffffff04000000ffffffffffffffffffffffffffffffffffffffff
-      _HashCodes: 77a7aa19510e9f59ed43d334ba55b93b134e5c09fe3787566d38f6476da5e2352d6dfd480000000000000000000000000000000000000000000000000000000000000000
-      _Next: ffffffffffffffffffffffff00000000ffffffff0100000002000000ffffffff050000000000000000000000000000000000000000000000000000000000000000000000
-      _Count: 9
-      _Version: 9
+      _Buckets: 05000000ffffffff0600000003000000000000000100000002000000
+      _HashCodes: 77a7aa19510e9f59ed43d334ba55b93b6d38f6476da5e2352d6dfd48
+      _Next: ffffffffffffffffffffffffffffffffffffffff04000000ffffffff
+      _Count: 7
+      _Version: 7
       _FreeList: -1
       _FreeCount: 0
       _Keys:
@@ -109,19 +123,9 @@ MonoBehaviour:
       - Release/PC
       - Release/OSX/OSX
       - Release/OSX
-      - Release/Linux/Linux x64
-      - Release/Linux
       - Release/WebGL/WebGL
       - Release/WebGL
       - Release
-      - 
-      - 
-      - 
-      - 
-      - 
-      - 
-      - 
-      - 
       _Values:
       - enabled: 1
         childKeys: []
@@ -137,40 +141,18 @@ MonoBehaviour:
         childKeys: []
       - enabled: 1
         childKeys:
-        - Release/Linux/Linux x64
-      - enabled: 1
-        childKeys: []
-      - enabled: 1
-        childKeys:
         - Release/WebGL/WebGL
       - enabled: 1
         childKeys:
         - Release/PC
         - Release/OSX
-        - Release/Linux
         - Release/WebGL
-      - enabled: 1
-        childKeys: []
-      - enabled: 1
-        childKeys: []
-      - enabled: 1
-        childKeys: []
-      - enabled: 1
-        childKeys: []
-      - enabled: 1
-        childKeys: []
-      - enabled: 1
-        childKeys: []
-      - enabled: 1
-        childKeys: []
-      - enabled: 1
-        childKeys: []
     showViewOptions: 0
     showConfigs: 0
     showBuildInfo: 0
     hideDisabled: 0
     treeView: 0
-    selectedKeyChain: 
+    selectedKeyChain: Release/WebGL/WebGL
   _preBuildActions:
     buildActions: []
   _postBuildActions:

@@ -70,17 +70,19 @@ public class CraftingRecipe : MonoBehaviour {
 			Initialize();
 		}
 		if(inventory.CheckRecipe(recipe)) {
-			ColorBlock colors = originalColors;
+			/*ColorBlock colors = originalColors;
 			colors.normalColor += posColorTint;
 			colors.highlightedColor += posColorTint;
 			colors.pressedColor += posColorTint;
-			recipeButton.colors = colors;
+			recipeButton.colors = colors;*/
+			recipeButton.interactable = true;
 		} else {
-			ColorBlock colors = originalColors;
+			/*ColorBlock colors = originalColors;
 			colors.normalColor += negColorTint;
 			colors.highlightedColor += negColorTint;
 			colors.pressedColor += negColorTint;
-			recipeButton.colors = colors;
+			recipeButton.colors = colors;*/
+			recipeButton.interactable = false;
 		}
 	}
 

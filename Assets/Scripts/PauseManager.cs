@@ -67,4 +67,9 @@ public class PauseManager : MonoBehaviour {
 		Destroy(FindObjectOfType<PersistentData>().gameObject); // Destroy the persistent data object before we return to the menu, otherwise the game will save with a blank save name.
 		SceneManager.LoadScene("Menu");
 	}
+
+	public bool Paused ()
+    {
+		return paused;
+    }
 }

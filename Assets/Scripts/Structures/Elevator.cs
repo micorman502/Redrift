@@ -11,7 +11,7 @@ public class Elevator : MonoBehaviour, ITakeInput
     [SerializeField] private float direction;
     [SerializeField] private Vector3 elevatorBase;
     [SerializeField] private Vector3 elevatorTop;
-    [SerializeField] private Transform hookPoint;
+    [SerializeField] private Transform hookPoint = null;
     [SerializeField] private float directionBounds;
     private float smoothedDirection;
     // Start is called before the first frame update

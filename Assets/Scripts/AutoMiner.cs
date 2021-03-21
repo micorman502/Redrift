@@ -22,6 +22,8 @@ public class AutoMiner : MonoBehaviour {
 
 	public List<Item> items = new List<Item>();
 	public List<int> itemAmounts = new List<int>();
+	[SerializeField] int maxItemThreshold;
+	int totalItems;
 
 	float gatherTime = 0f;
 
@@ -78,13 +80,20 @@ public class AutoMiner : MonoBehaviour {
 					FindNearestTarget();
 				}
 			}
-		} else {
-			//Debug.Log("Not on NavMesh");
 		}
 	}
 
 	public void FindNearestTarget ()
     {
+		totalItems = 0;
+		foreach (int amt in itemAmounts)
+        {
+			totalItems += amt;
+        }
+		if (totalItems > maxItemThreshold)
+        {
+
+        }
 		ResourceHandler closestHandler = null;
 		float closestDistance = Mathf.Infinity;
 		foreach (ResourceHandler resourceHandler in hive.worldResources)

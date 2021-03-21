@@ -25,6 +25,10 @@ public class Save {
 
 	public List<int> achievementIDs = new List<int>();
 
+	public List<MeteorSaveData> meteorSaveData = new List<MeteorSaveData>();
+
+	public List<SerializedApple> apples = new List<SerializedApple>();
+
 	public List<ItemSaveData> itemSaveData = new List<ItemSaveData>();
 
 	public List<SerializableVector3> smallIslandPositions = new List<SerializableVector3>();
@@ -40,6 +44,8 @@ public class Save {
 
 	public int mode;
 
+	public string modifier;
+
 	public bool playerDead;
 
 	public SerializableVector3 playerVelocity;
@@ -54,5 +60,23 @@ public class ItemSaveData {
 	public List<int> itemIDs = new List<int>();
 	public List<int> itemAmounts;
 	public int num;
+	public bool bit;
+}
 
+[Serializable]
+public class MeteorSaveData
+{
+	public SerializableVector3 path;
+	public SerializableVector3 pos;
+	public float size;
+	public float speed;
+	public int penetrationTicks;
+}
+
+[Serializable]
+public class SerializedApple
+{
+	public bool onTree;
+	public SerializableVector3 treeBase;
+	public SerializableVector3 positon;
 }

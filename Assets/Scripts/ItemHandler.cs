@@ -5,7 +5,9 @@ using UnityEngine;
 public class ItemHandler : MonoBehaviour {
 
 	public Item item;
-	public void GetDestroyed ()
+
+
+    public void GetDestroyed ()
     {
         GridPosition gr = gameObject.GetComponent<GridPosition>(); //not very clean but ehhhh
         ElevatorBlock eb = gameObject.GetComponent<ElevatorBlock>();

@@ -3,8 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class SaveManager : MonoBehaviour {
 
@@ -17,6 +19,8 @@ public class SaveManager : MonoBehaviour {
 	public Resource[] allResources;
 	[SerializeField] private GameObject smallIslandPrefab;
 	[SerializeField] private GameObject smallDarkIslandPrefab;
+	[SerializeField] GameObject meteorPrefab;
+	[SerializeField] GameObject applePrefab;
 
 	Inventory inventory;
 	PlayerController player;
@@ -29,8 +33,11 @@ public class SaveManager : MonoBehaviour {
 
 	HiveMind hive;
 
+	INeedModifier[] modifierAffected;
+
 	public int difficulty;
 	public int mode;
+	public string modifier;
 
 	FileInfo[] info;
 
@@ -39,6 +46,7 @@ public class SaveManager : MonoBehaviour {
 	float autoSaveTimer = 0f;
 
 	void Awake() {
+		modifierAffected = FindInterface<INeedModifier>().ToArray();
 		hive = FindObjectOfType<HiveMind>();
 		GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
 		worldManager = FindObjectOfType<WorldManager>();
@@ -60,7 +68,9 @@ public class SaveManager : MonoBehaviour {
 			} else {
 				difficulty = persistentData.difficulty;
 				mode = persistentData.mode;
+				modifier = persistentData.gameModifier;
 				SaveGame();
+				LoadStartingModifierObjects();
 			}
 			if(mode == 1) { // Creative mode
 				inventory.LoadCreativeMode();
@@ -142,6 +152,8 @@ public class SaveManager : MonoBehaviour {
 						LightItem li = itemObj.GetComponent<LightItem>();
 						GridPosition gr = itemObj.GetComponent<GridPosition>();
 						ElevatorBlock elevBlock = itemObj.GetComponent<ElevatorBlock>();
+						PistonLauncher launcher = itemObj.GetComponent<PistonLauncher>();
+
 						if(handler.item.type == Item.ItemType.Structure && handler.item.subType == Item.ItemSubType.Furnace) {
 							Furnace furnace = itemObj.GetComponent<Furnace>();
 							furnace.fuel = save.itemSaveData[i].fuel;
@@ -164,6 +176,11 @@ public class SaveManager : MonoBehaviour {
 								holder.LoadNullValues();
 							}
 						}
+						if (launcher)
+                        {
+							launcher.LoadInternalForce(save.itemSaveData[i].num);
+							launcher.LoadAutomationState(save.itemSaveData[i].bit);
+                        }
 						if (autoMiner) {
 							autoMiner.items = IDsToItems(save.itemSaveData[i].itemIDs);
 							autoMiner.itemAmounts = save.itemSaveData[i].itemAmounts;
@@ -198,6 +215,16 @@ public class SaveManager : MonoBehaviour {
 				}
 			}
 
+			if (save.meteorSaveData != null)
+			{
+				for (int i = 0; i < save.meteorSaveData.Count; i++)
+				{
+					MeteorSaveData msd = save.meteorSaveData[i];
+					GameObject meteor = Instantiate(meteorPrefab, msd.pos, Quaternion.identity) as GameObject;
+					meteor.GetComponent<Meteorite>().LoadValues(msd.path, msd.size, msd.speed, msd.penetrationTicks);
+				}
+			}
+
 			for(int i = 0; i < save.worldResourceIDs.Count; i++) {
 				foreach(Resource resource in allResources) {
 					if(resource.id == save.worldResourceIDs[i]) {
@@ -225,13 +252,32 @@ public class SaveManager : MonoBehaviour {
 				}
 			}
 
-			foreach(Vector3 pos in save.smallIslandPositions) {
+			if (save.apples != null)
+			{
+				for (int i = 0; i < save.apples.Count; i++)
+				{
+					GameObject newApple = Instantiate(applePrefab, save.apples[i].positon, Quaternion.identity);
+					Apple appleComp = newApple.GetComponent<Apple>();
+					if (save.apples[i].onTree)
+					{
+						appleComp.Attach(save.apples[i].treeBase);
+					}
+				}
+			}
+
+			foreach (Vector3 pos in save.smallIslandPositions) {
 				Instantiate(smallIslandPrefab, pos, smallIslandPrefab.transform.rotation);
 			}
 			foreach (Vector3 pos in save.smallDarkIslandPositions)
             {
 				Instantiate(smallDarkIslandPrefab, pos, smallDarkIslandPrefab.transform.rotation);
             }
+			foreach (INeedModifier inm in modifierAffected)
+            {
+				inm.TakeModifier(save.modifier);
+            }
+
+			
 
 			player.transform.position = save.playerPosition;
 			player.transform.rotation = save.playerRotation;
@@ -252,6 +298,7 @@ public class SaveManager : MonoBehaviour {
 
 			difficulty = save.difficulty;
 			mode = save.mode;
+			modifier = save.modifier;
 
 			achievementManager.SetAchievements(save.achievementIDs);
 
@@ -260,6 +307,14 @@ public class SaveManager : MonoBehaviour {
 			saveText.text = "Game loaded from " + save.saveTime.ToString("HH:mm MMMM dd, yyyy");
 		} else {
 			saveText.text = "No game save found";
+		}
+	}
+
+	public void LoadStartingModifierObjects ()
+    {
+		foreach (INeedModifier inm in modifierAffected)
+		{
+			inm.TakeModifier(persistentData.gameModifier);
 		}
 	}
 
@@ -318,6 +373,7 @@ public class SaveManager : MonoBehaviour {
 				AutoSorter autoSorter = handler.GetComponent<AutoSorter>();
 				Radio radio = handler.GetComponent<Radio>();
 				LightItem li = handler.GetComponent<LightItem>();
+				PistonLauncher pl = handler.GetComponent<PistonLauncher>();
 
 				if(handler.item.type == Item.ItemType.Structure && handler.item.subType == Item.ItemSubType.Furnace) { //furnaces
 					Furnace furnace = handler.GetComponent<Furnace>();
@@ -343,6 +399,12 @@ public class SaveManager : MonoBehaviour {
 						itemSaveData.itemID = -1;
 						itemSaveData.itemAmount = 0;
 					}
+				}
+
+				if (pl)
+				{
+					itemSaveData.num = pl.GetInternalForce();
+					itemSaveData.bit = pl.GetAutomationState();
 				}
 
 				if (autoMiner) {
@@ -379,7 +441,25 @@ public class SaveManager : MonoBehaviour {
 					save.treeAssociation.Add(-2);
 				}
 				*/
-				
+				//yep, an exception for apples...
+				/*Apple apple = itemObj.GetComponent<Apple>();
+				if (apple)
+                {
+					if (!apple.Attached())
+                    {
+						save.itemSaveData.Add(itemSaveData);
+					} else
+                    {
+						SerializedApple sapple = new SerializedApple();
+						sapple.onTree = apple.Attached();
+						sapple.treeBase = apple.GetTreeBase();
+						sapple.positon = apple.gameObject.transform.position;
+						save.apples.Add(sapple);
+                    }
+                } else
+                {
+					save.itemSaveData.Add(itemSaveData);
+				}*/ //may be revisited later
 				save.itemSaveData.Add(itemSaveData);
 				// Done saving item data
 				save.worldItemPositions.Add(itemObj.transform.position);
@@ -388,6 +468,17 @@ public class SaveManager : MonoBehaviour {
 				save.worldItemHasRigidbodies.Add(itemRB);
 				usedItemHandlers.Add(handler);
 			}
+		}
+
+		foreach (Meteorite meteor in FindObjectsOfType<Meteorite>())
+        {
+			MeteorSaveData meteorSave = new MeteorSaveData();
+			meteorSave.path = meteor.GetPath();
+			meteorSave.size = meteor.GetSize();
+			meteorSave.speed = meteor.GetSpeed();
+			meteorSave.penetrationTicks = meteor.GetPticks();
+			meteorSave.pos = meteor.gameObject.transform.position;
+			save.meteorSaveData.Add(meteorSave);
 		}
 
 		List<ResourceHandler> usedResourceHandlers = new List<ResourceHandler>();
@@ -422,9 +513,11 @@ public class SaveManager : MonoBehaviour {
 				save.smallDarkIslandPositions.Add(si.transform.position);
 			}
 		}
+		
 
 		save.difficulty = difficulty;
 		save.mode = mode;
+		save.modifier = modifier;
 
 		save.playerDead = player.dead;
 
@@ -462,6 +555,20 @@ public class SaveManager : MonoBehaviour {
 		return returnedItem;
     }
 
+	public static List<T> FindInterface<T>()
+	{
+		List<T> interfaces = new List<T>();
+		GameObject[] rootGameObjects = SceneManager.GetActiveScene().GetRootGameObjects();
+		foreach (var rootGameObject in rootGameObjects)
+		{
+			T[] childrenInterfaces = rootGameObject.GetComponentsInChildren<T>();
+			foreach (var childInterface in childrenInterfaces)
+			{
+				interfaces.Add(childInterface);
+			}
+		}
+		return interfaces;
+	}
 }
 
 
@@ -519,4 +626,5 @@ public struct SerializableQuaternion {
 	}
 }
 
+//https://answers.unity.com/questions/863509/how-can-i-find-all-objects-that-have-a-script-that.html
 // https://answers.unity.com/questions/956047/serialize-quaternion-or-vector3.html

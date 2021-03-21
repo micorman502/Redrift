@@ -163,6 +163,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   islandType: 1
   moveAmount: {x: 0, y: 0, z: 1}
+  requiredObjects: -1
   speed: 0.5
 --- !u!114 &8268908317315188529
 MonoBehaviour:

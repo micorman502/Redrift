@@ -13,10 +13,9 @@ public class Inventory : MonoBehaviour {
 	[SerializeField] GameObject craftingContainer;
 
 	public GameObject tooltip;
-	public Vector3 tooltipOffset;
 	public Text tooltipTitle;
 	public Text tooltipDesc;
-	RectTransform tooltipTransform;
+
 
 	public Transform[] slotHolders;
 	[SerializeField] Transform inventorySlotsContainer;
@@ -28,6 +27,7 @@ public class Inventory : MonoBehaviour {
 
 	AchievementManager achievementManager;
 	AudioManager audioManager;
+	PauseManager pauseManager;
 
 	[HideInInspector] public bool placingStructure;
 	GameObject currentPreviewObj;
@@ -54,8 +54,8 @@ public class Inventory : MonoBehaviour {
 		audioManager = FindObjectOfType<AudioManager>();
 		achievementManager = FindObjectOfType<AchievementManager>();
 		saveManager = FindObjectOfType<SaveManager>();
+		pauseManager = FindObjectOfType<PauseManager>();
 
-		tooltipTransform = tooltip.GetComponent<RectTransform>();
 
 		player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
 
@@ -110,11 +110,8 @@ public class Inventory : MonoBehaviour {
 	}
 
 	void Update() {
-		if(tooltip.activeSelf) {
-			tooltipTransform.position = Input.mousePosition + tooltipOffset;
-		}
 
-		if(Input.GetKeyDown(KeyCode.Tab)) {
+		if(Input.GetKeyDown(KeyCode.Tab) && !pauseManager.Paused()) {
 			inventoryContainer.SetActive(!inventoryContainer.activeSelf);
 			player.LockLook(inventoryContainer.activeSelf);
 			if(inventoryContainer.activeSelf) {
@@ -167,7 +164,7 @@ public class Inventory : MonoBehaviour {
 
 		if(!player.dead) {
 			if(placingStructure && !player.ActiveMenu()) {
-				player.ShowNoticeText("[LMB] to place, [RMB] to cancel, [R] to rotate");
+				player.ShowNoticeText("[LMB] to place, [RMB] to cancel, [, and .] to rotate");
 				if(!currentPreviewObj.activeSelf) {
 					currentPreviewObj.SetActive(true);
 				}
@@ -191,7 +188,8 @@ public class Inventory : MonoBehaviour {
 					}
 				}
 
-				if(Input.GetKeyDown(KeyCode.R)) { //TODO: Make "Rotate" Button, not key
+				//Rotate axes
+				if(Input.GetKeyDown(KeyCode.Comma) || Input.GetKeyDown(KeyCode.R)) { 
 					currentPlacingRot++;
 					if(currentPlacingRot >= currentPlacingItem.rots.Length) {
 						currentPlacingRot = 0;
@@ -200,8 +198,20 @@ public class Inventory : MonoBehaviour {
 						currentPreviewObj.transform.rotation = Quaternion.Euler(currentPlacingItem.rots[currentPlacingRot]);
 					}
 				}
+				if (Input.GetKeyDown(KeyCode.Period))
+				{ 
+					currentPlacingRot--;
+					if (currentPlacingRot < 0)
+					{
+						currentPlacingRot = currentPlacingItem.rots.Length - 1;
+					}
+					if (!currentPlacingItem.alignToNormal)
+					{
+						currentPreviewObj.transform.rotation = Quaternion.Euler(currentPlacingItem.rots[currentPlacingRot]);
+					}
+				}
 
-				if(currentPlacingItem.alignToNormal) {
+				if (currentPlacingItem.alignToNormal) {
 					if(player.target && player.distanceToTarget <= player.interactRange) { // TODO: WORKING ON CURRENTLY |||___|||---|||___|||===================
 						currentPreviewObj.transform.rotation = Quaternion.FromToRotation(Vector3.up, player.targetHit.normal) * Quaternion.Euler(currentPlacingItem.rots[currentPlacingRot]);
 					} else {
@@ -223,7 +233,6 @@ public class Inventory : MonoBehaviour {
 						ps.Play();
 					}
 					audioManager.Play("Build");
-					currentPlacingRot = 0;
 					RemovePlace();
 					InventoryUpdate();
 					player.HideNoticeText();
@@ -333,7 +342,7 @@ public class Inventory : MonoBehaviour {
 
 	public void CancelStructurePlacement() {
 		Destroy(currentPreviewObj);
-		currentPlacingRot = 0;
+		//currentPlacingRot = 0;
 		AddItem(currentPlacingItem, 1);
 		placingStructure = false;
 		currentPlacingItem = null;
@@ -541,6 +550,29 @@ public class Inventory : MonoBehaviour {
 		currentPreviewObj = previewObj;
 		currentPlacingItem = item;
 		placingStructure = true;
+		PlacementPreviewUpdate();
+	}
+
+	void PlacementPreviewUpdate ()
+    {
+		if (currentPlacingRot > currentPlacingItem.rots.Length - 1)
+        {
+			currentPlacingRot = 0;
+        }
+		if (player.target && player.distanceToTarget <= player.interactRange)
+		{
+			if (currentPlacingItem.alignToNormal)
+            {
+				currentPreviewObj.transform.rotation = Quaternion.FromToRotation(Vector3.up, player.targetHit.normal) * Quaternion.Euler(currentPlacingItem.rots[currentPlacingRot]);
+			} else
+            {
+				currentPreviewObj.transform.rotation = Quaternion.Euler(currentPlacingItem.rots[currentPlacingRot]);
+			}
+		}
+		else
+		{
+			currentPreviewObj.transform.rotation = Quaternion.Euler(currentPlacingItem.rots[currentPlacingRot]);
+		}
 	}
 
 	void AddAllItems() {

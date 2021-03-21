@@ -165,8 +165,8 @@ MonoBehaviour:
     chance: 0.5
   - item: {fileID: 11400000, guid: f2812bf6142a15244bbc5eb86d78d4a2, type: 2}
     minAmount: 1
-    maxAmount: 3
-    chance: 0.8
+    maxAmount: 1
+    chance: 0.6
   lootParticles: {fileID: 1340000199260684, guid: 7cc0a795e6a2565419ddc9161bce54ae,
     type: 3}
 --- !u!54 &54344118679507228
@@ -178,7 +178,7 @@ Rigidbody:
   m_GameObject: {fileID: 1365681976019388}
   serializedVersion: 2
   m_Mass: 7
-  m_Drag: 0.75
+  m_Drag: 0.2
   m_AngularDrag: 0.5
   m_UseGravity: 1
   m_IsKinematic: 0

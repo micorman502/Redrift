@@ -175,41 +175,19 @@ public class WorldManager : MonoBehaviour
 			pos = transform.TransformPoint(new Vector3(Random.insideUnitCircle.x * islands[isl].bounds, -300f, Random.insideUnitCircle.y * islands[isl].bounds));
 			rayDir = Vector3.up;
 		}
-		if (Physics.Raycast(islandPos + pos, rayDir, out hit, Mathf.Infinity, -1))
+		if (Physics.Raycast(pos, rayDir, out hit, Mathf.Infinity, -1))
 		{
 			if (hit.collider.gameObject == islands[isl].island)
 			{
 				GameObject obj = Instantiate(islands[isl].spawns[spawnIndex].spawn, hit.point, Quaternion.LookRotation(hit.normal)) as GameObject;
 				hive.AddResource(obj.GetComponent<ResourceHandler>());
 				obj.transform.Rotate(Vector3.forward * Random.Range(0f, 360f));
-			} else
-            {
-				if (islands[isl].worldType == WorldType.Dark)
-				{
-					Debug.Log("spawn fail due to wrong collider");
-					Debug.Log(hit.collider.gameObject.name);
-				}
 			}
-		} else
-        {
-			Debug.Log(pos);
-			Debug.DrawRay(pos, rayDir * 1000, Color.red, 200f);
-				Debug.Log("Spawn fail due to bad raycast");
-				if (hit.collider != null)
-				{
-					Debug.Log(hit.collider.gameObject.name);
-				} else
-                {
-					Debug.Log("didn't hit anywhere");
-                }
 		}
 	}
 
 	public void SpawnRandomObject(int isl)
 	{
-		Vector3 islandPos = islands[isl].island.transform.position;
-		Vector3 pos = transform.TransformPoint(new Vector3(Random.insideUnitCircle.x * islands[isl].bounds, 300f, Random.insideUnitCircle.y * islands[isl].bounds));
-		RaycastHit hit;
 		SpawnObject(Random.Range(0, islands[isl].spawns.Length - 1), isl);
 	}
 
