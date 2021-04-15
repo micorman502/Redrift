@@ -144,23 +144,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   loot:
   - item: {fileID: 11400000, guid: e605b7711cb22d140805767d6575e6ca, type: 2}
-    minAmount: 0
-    maxAmount: 3
+    minAmount: 3
+    maxAmount: 5
     chance: 0.75
   - item: {fileID: 11400000, guid: cb2b8f9de15633642b25d8a3e5609e34, type: 2}
-    minAmount: 0
-    maxAmount: 1
+    minAmount: 1
+    maxAmount: 2
     chance: 0.75
-  - item: {fileID: 11400000, guid: 50ee8909b487ecc40b59d452afd96f4d, type: 2}
-    minAmount: 0
-    maxAmount: 1
-    chance: 0.5
   - item: {fileID: 11400000, guid: 7594da2b096925a46a5c6e4fa578ae85, type: 2}
     minAmount: 0
     maxAmount: 3
     chance: 0.5
   - item: {fileID: 11400000, guid: d332c4c202197f849af660fcbc44dc16, type: 2}
-    minAmount: 0
+    minAmount: 1
     maxAmount: 3
     chance: 0.5
   - item: {fileID: 11400000, guid: f2812bf6142a15244bbc5eb86d78d4a2, type: 2}

@@ -145,6 +145,8 @@ public class SaveManager : MonoBehaviour {
 								Destroy(itemRB);
 							}
 						}
+						ItemSaveData data = save.itemSaveData[i];
+
 						ItemHandler handler = itemObj.GetComponent<ItemHandler>();
 						AutoMiner autoMiner = itemObj.GetComponent<AutoMiner>();
 						AutoSorter autoSorter = itemObj.GetComponent<AutoSorter>();
@@ -153,12 +155,13 @@ public class SaveManager : MonoBehaviour {
 						GridPosition gr = itemObj.GetComponent<GridPosition>();
 						ElevatorBlock elevBlock = itemObj.GetComponent<ElevatorBlock>();
 						PistonLauncher launcher = itemObj.GetComponent<PistonLauncher>();
+						AutoMinerDock minerDock = itemObj.GetComponent<AutoMinerDock>();
 
 						if(handler.item.type == Item.ItemType.Structure && handler.item.subType == Item.ItemSubType.Furnace) {
 							Furnace furnace = itemObj.GetComponent<Furnace>();
-							furnace.fuel = save.itemSaveData[i].fuel;
-							if(save.itemSaveData[i].itemID != -1) {
-								foreach (int furnaceItem in save.itemSaveData[i].itemIDs) {
+							furnace.fuel = data.fuel;
+							if(data.itemID != -1) {
+								foreach (int furnaceItem in data.itemIDs) {
 									furnace.currentSmeltingItem.Add(ItemIDToItem(furnaceItem)); //this could get VERY inefficient.
 									furnace.finishTime = furnace.smeltTime + Time.time;
 								}
@@ -167,9 +170,9 @@ public class SaveManager : MonoBehaviour {
 						if (handler.item.type == Item.ItemType.Structure && handler.item.subType == Item.ItemSubType.Storage) //This is only temporary for the current storage solution!!
 						{
 							ItemHolder holder = handler.GetComponent<ItemHolder>();
-							if (save.itemSaveData[i].itemAmount > 0)
+							if (data.itemAmount > 0)
 							{
-								holder.LoadValues(save.itemSaveData[i].itemAmount, ItemIDToItem(save.itemSaveData[i].itemID));
+								holder.LoadValues(data.itemAmount, ItemIDToItem(data.itemID));
 							}
 							else
 							{
@@ -178,30 +181,39 @@ public class SaveManager : MonoBehaviour {
 						}
 						if (launcher)
                         {
-							launcher.LoadInternalForce(save.itemSaveData[i].num);
-							launcher.LoadAutomationState(save.itemSaveData[i].bit);
+							launcher.LoadInternalForce(data.num);
+							launcher.LoadAutomationState(data.bit);
+                        }
+						if (minerDock)
+                        {
+							List<Item> passedItems = new List<Item>();
+							foreach (int id in data.itemIDs)
+                            {
+								passedItems.Add(ItemIDToItem(id));
+                            }
+							minerDock.LoadValues(passedItems, data.itemAmounts, data.bit);
                         }
 						if (autoMiner) {
-							autoMiner.items = IDsToItems(save.itemSaveData[i].itemIDs);
-							autoMiner.itemAmounts = save.itemSaveData[i].itemAmounts;
-							if(save.itemSaveData[i].itemID != -1) {
-								autoMiner.SetTool(FindItem(save.itemSaveData[i].itemID));
+							autoMiner.items = IDsToItems(data.itemIDs);
+							autoMiner.itemAmounts = data.itemAmounts;
+							if(data.itemID != -1) {
+								autoMiner.SetTool(FindItem(data.itemID));
 							}
 						}
 						if(autoSorter) {
-							if(save.itemSaveData[i].itemID != -1) {
-								autoSorter.SetItem(FindItem(save.itemSaveData[i].itemID));
+							if(data.itemID != -1) {
+								autoSorter.SetItem(FindItem(data.itemID));
 							}
 						}
 						if(handler.item.type == Item.ItemType.Structure && handler.item.subType == Item.ItemSubType.Conveyor) {
 							ConveyorBelt conveyerBelt = itemObj.GetComponent<ConveyorBelt>();
-							conveyerBelt.SetSpeed(save.itemSaveData[i].num);
+							conveyerBelt.SetSpeed(data.num);
 						}
 						if(radio) {
-							radio.SetSong(save.itemSaveData[i].num);
+							radio.SetSong(data.num);
 						}
 						if(li) {
-							li.SetIntensity(save.itemSaveData[i].num);
+							li.SetIntensity(data.num);
 						}
 						if (gr)
                         {
@@ -238,6 +250,10 @@ public class SaveManager : MonoBehaviour {
 							TreeResource tree = resourceObj.GetComponent<TreeResource>();
 							if(tree) {
 								tree.spawnApples = false;
+								if (save.worldResourceGrowthStates != null)
+								{
+									tree.SetGrowthState(save.worldResourceGrowthStates[i]);
+								}
 							}
 						}
 					}
@@ -339,6 +355,7 @@ public class SaveManager : MonoBehaviour {
 	private Save CreateSave() {
 		Save save = new Save();
 
+		save.version = Application.version;
 		save.playerPosition = player.transform.position;
 		save.playerRotation = player.transform.rotation;
 		save.playerHealth = player.health;
@@ -374,6 +391,7 @@ public class SaveManager : MonoBehaviour {
 				Radio radio = handler.GetComponent<Radio>();
 				LightItem li = handler.GetComponent<LightItem>();
 				PistonLauncher pl = handler.GetComponent<PistonLauncher>();
+				AutoMinerDock minerDock = handler.GetComponent<AutoMinerDock>();
 
 				if(handler.item.type == Item.ItemType.Structure && handler.item.subType == Item.ItemSubType.Furnace) { //furnaces
 					Furnace furnace = handler.GetComponent<Furnace>();
@@ -406,6 +424,18 @@ public class SaveManager : MonoBehaviour {
 					itemSaveData.num = pl.GetInternalForce();
 					itemSaveData.bit = pl.GetAutomationState();
 				}
+				if (minerDock)
+                {
+					minerDock.GetValues(out List<Item> items, out List<int> amounts, out bool automated);
+					List<int> tempIDs = new List<int>();
+					foreach (Item item in items)
+                    {
+						tempIDs.Add(item.id);
+                    }
+					itemSaveData.itemIDs = tempIDs;
+					itemSaveData.itemAmounts = amounts;
+					itemSaveData.bit = automated;
+                }
 
 				if (autoMiner) {
 					itemSaveData.itemIDs = ItemsToIDs(autoMiner.items);
@@ -490,6 +520,14 @@ public class SaveManager : MonoBehaviour {
 				save.worldResourcePositions.Add(resourceObj.transform.position);
 				save.worldResourceRotations.Add(resourceObj.transform.rotation);
 				save.worldResourceHealths.Add(handler.health);
+				TreeResource tree = resourceObj.GetComponentInParent<TreeResource>();
+				if (tree)
+                {
+					save.worldResourceGrowthStates.Add(Mathf.FloorToInt(tree.GetGrowthState()));
+				} else
+                {
+					save.worldResourceGrowthStates.Add(0);
+				}
 				/*
 				if(handler.resource.id == 5) { // Tree
 					TreeResource tr = handler.GetComponent<TreeResource>();
@@ -544,7 +582,7 @@ public class SaveManager : MonoBehaviour {
 
 	public Item ItemIDToItem (int ID)
     {
-		Item returnedItem = new Item();
+		Item returnedItem = ScriptableObject.CreateInstance<Item>();
 		for (int i = 0; i < allItems.Length; i++)
         {
 			if (allItems[i].id == ID)

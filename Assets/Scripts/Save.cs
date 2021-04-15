@@ -17,6 +17,7 @@ public class Save {
 
 	public List<SerializableVector3> worldResourcePositions = new List<SerializableVector3>();
 	public List<SerializableQuaternion> worldResourceRotations = new List<SerializableQuaternion>();
+	public List<float> worldResourceGrowthStates = new List<float>();
 	public List<int> worldResourceIDs = new List<int>();
 	public List<int> worldResourceHealths = new List<int>();
 
@@ -37,6 +38,8 @@ public class Save {
 	//public List<int> treeAssociation = new List<int>();
 
 	public DateTime saveTime;
+
+	public string version = "1.6.2";
 
 	public int worldType;
 

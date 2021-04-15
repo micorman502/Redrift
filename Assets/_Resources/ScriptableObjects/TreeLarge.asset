@@ -19,7 +19,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e605b7711cb22d140805767d6575e6ca, type: 2}
   chances:
   - 1
-  maxGathers: 10
+  maxGathers: 12
   gatherTime: 3
   toughness: 0
   infiniteGathers: 0

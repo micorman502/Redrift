@@ -15,15 +15,17 @@ MonoBehaviour:
   itemName: Iron Pickaxe
   itemDescription: 
   type: 1
+  subType: 0
   id: 3
   icon: {fileID: 21300000, guid: fe564a5001d489648861498a6a36c72e, type: 3}
   prefab: {fileID: 1549088602080200, guid: 361c2729381be42498ca0e3e3ffa5a3a, type: 3}
   timeToGather: 0.1
   handRotation: {x: 119.737, y: 7.760986, z: 82.239}
   handScale: {x: 1, y: 1, z: 1}
+  handPrefab: {fileID: 0}
   maxStackCount: 1
   previewPrefab: {fileID: 0}
-  speed: 3.5
+  speed: 2.5
   gatherAmount: 1
   toolToughness: 3
   power: 0

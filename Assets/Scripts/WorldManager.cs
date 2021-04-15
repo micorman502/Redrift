@@ -175,7 +175,8 @@ public class WorldManager : MonoBehaviour
 			pos = transform.TransformPoint(new Vector3(Random.insideUnitCircle.x * islands[isl].bounds, -300f, Random.insideUnitCircle.y * islands[isl].bounds));
 			rayDir = Vector3.up;
 		}
-		if (Physics.Raycast(pos, rayDir, out hit, Mathf.Infinity, -1))
+		Debug.DrawRay(pos, rayDir * 100f, Color.red, 100f);
+		if (Physics.Raycast(islandPos + pos, rayDir, out hit, Mathf.Infinity, ~LayerMask.GetMask("Ignore Raycast")))
 		{
 			if (hit.collider.gameObject == islands[isl].island)
 			{

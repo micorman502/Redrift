@@ -63,11 +63,17 @@ public class MenuSaveManager : MonoBehaviour {
 		CreateNewSaveButton(); //Opposed to Adrift, this is at the top. The new save button should be at the top, otherwise lots of scrolling ensues.
 		saveNameInputField.text = "World " + (info.Length + 1);
 		for(int i = 0; i < info.Length; i++) {
+			BinaryFormatter bf = new BinaryFormatter();
+			FileStream file = File.Open(Application.persistentDataPath + "/saves/" + info[i].Name, FileMode.Open);
+			Save save = (Save)bf.Deserialize(file);
+			file.Close(); //yeah, opening a save for each list item isn't the best, but i don't know what else to do.
+
 			int saveNum = i;
 			GameObject go = Instantiate(saveListItem, saveList.transform);
 			saveListItems.Add(go);
 			string[] infoSplit = info[saveNum].Name.Split('.');
 			go.GetComponentInChildren<Text>().text = infoSplit[infoSplit.Length - 2];
+			go.GetComponentsInChildren<Text>()[1].text = save.version;
 			go.GetComponent<Button>().onClick.AddListener(delegate { LoadSave(saveNum); });
 			Button confirmDeleteButton = go.transform.Find("ConfirmDeleteButton").GetComponent<Button>();
 			confirmDeleteButton.onClick.AddListener(delegate { DeleteSave(saveNum); });

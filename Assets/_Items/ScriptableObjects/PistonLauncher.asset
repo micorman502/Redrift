@@ -23,7 +23,7 @@ MonoBehaviour:
   handRotation: {x: 0, y: 0, z: 0}
   handScale: {x: 0.3, y: 0.3, z: 0.3}
   handPrefab: {fileID: 0}
-  maxStackCount: 0
+  maxStackCount: 1
   previewPrefab: {fileID: 8476925708706814377, guid: 4390da4f295e19149afb152d2f8f8b89,
     type: 3}
   speed: 0

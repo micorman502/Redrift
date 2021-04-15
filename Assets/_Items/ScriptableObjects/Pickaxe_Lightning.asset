@@ -25,7 +25,7 @@ MonoBehaviour:
   handPrefab: {fileID: 0}
   maxStackCount: 1
   previewPrefab: {fileID: 0}
-  speed: 4
+  speed: 2.5
   gatherAmount: 2
   toolToughness: 4
   power: 0

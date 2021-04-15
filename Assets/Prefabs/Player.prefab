@@ -19587,7 +19587,8 @@ MonoBehaviour:
   rb: {fileID: 0}
   mouseSensitivity: 0
   walkSpeed: 5
-  runSpeed: 9
+  runSpeed: 7.5
+  airMult: 0.35
   jumpForce: 30000
   smoothTime: 0.05
   groundedMask:
@@ -19612,6 +19613,7 @@ MonoBehaviour:
   lightRealmNoticeTextColor: {r: 1, g: 1, b: 1, a: 1}
   darkRealmNoticeTextColor: {r: 0.5661765, g: 0, b: 0, a: 1}
   useParticles: {fileID: 198664128316266062}
+  moveAmount: {x: 0, y: 0, z: 0}
   inventory: {fileID: 0}
   canvas: {fileID: 0}
   grounded: 0

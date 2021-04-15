@@ -200,6 +200,9 @@ MonoBehaviour:
   - {fileID: 5614050327398090940}
   appleSpawnChance: 0.9
   apples: []
+  growthSpeed: 0.4
+  growthSpeedRandomisation: 0.2
+  maxSize: 1
   spawnApples: 1
 --- !u!1 &5612535572655653690
 GameObject:

@@ -9,7 +9,7 @@ public class PistonLauncher : MonoBehaviour, ITakeInput
     [SerializeField] float velocityMult;
     [SerializeField] Transform forwardDir;
     [SerializeField] GameObject automationIndicator;
-    [SerializeField] ParabolaRenderer parabola;
+    [SerializeField] ParabolaRenderer parabola = null;
     [SerializeField] ParticleSystem particles;
     [SerializeField] Animation launchAnim;
     [SerializeField] float baseForceMult;

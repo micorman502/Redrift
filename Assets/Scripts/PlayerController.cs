@@ -24,7 +24,9 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 	public float mouseSensitivity;
 	public float walkSpeed;
 	public float runSpeed;
+	[SerializeField] float airMult; //how much mmovement is multiplied while in the air
 	public float jumpForce;
+	bool jumpReady; 
 	public float smoothTime;
 	public LayerMask groundedMask;
 	public float interactRange = 2f;
@@ -56,10 +58,10 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 
 	private float verticalLookRotation;
 
-	private float smoothedYVelocity;
-	private float currentMoveSpeed;
-	private Vector3 moveAmount;
-	private Vector3 smoothMoveVelocity;
+	float smoothedYVelocity;
+	float currentMoveSpeed;
+	Vector3 moveAmount;
+	Vector3 smoothMoveVelocity;
 
 	[HideInInspector] public Inventory inventory;
 	AchievementManager achievementManager;
@@ -78,9 +80,9 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 
 	GameObject currentHandObj;
 
-	private Vector3 spawnpoint;
+	Vector3 spawnpoint;
 
-	private Quaternion startRot;
+	Quaternion startRot;
 
 	bool lockLook;
 	bool gathering = false;
@@ -188,6 +190,9 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 		{
 			currentWorld = WorldManager.WorldType.Light;
 			EnterLightWorld();
+		} else
+        {
+			IgnoreNextFall();
 		}
 	}
 
@@ -327,6 +332,7 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 
 		if (Input.GetButtonDown("Jump"))
 		{
+			jumpReady = true;
 			if (mode == 1)
 			{
 				if (flyDoubleTapCooldown > 0f)
@@ -344,10 +350,6 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 				{
 					flyDoubleTapCooldown = 0.5f;
 				}
-			}
-			if (grounded && !flying)
-			{
-				rb.AddForce(transform.up * jumpForce);
 			}
 		}
 
@@ -603,7 +605,7 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 							ItemHolder holder = itemHandler.GetComponent<ItemHolder>();
 							if (currentItemExists)
 							{
-								if (inventory.GetHeldItemStack() == 1)
+								if (inventory.GetHeldItemStack() == 0)
                                 {
 									StopInteractKeyRepeat();
                                 }
@@ -702,9 +704,8 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 										inventory.AddItem(holder.GetItem(), holder.ItemStack());
 									}
                                 }
-									pickingUpTime = 0f;
+								pickingUpTime = 0f;
 								progressUI.UpdateProgress(0, 0);
-								//progressImage.fillAmount = 0f;
 								inventory.Pickup(itemHandler);
 								audioManager.Play("Grab");
 							}
@@ -723,11 +724,20 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 				{ // Gather resources
 					ResourceHandler resHand = target.GetComponent<ResourceHandler>();
 					bool canMine = true;
-					if (inventory.slots[inventory.selectedHotbarSlot].currentItem && inventory.slots[inventory.selectedHotbarSlot].currentItem.toolToughness >= resHand.resource.toughness || resHand.resource.toughness == 0)
-					{
-						noticeText = "Hold [LMB] to gather";
-						canMine = true;
-					} else
+                    if (inventory.slots[inventory.selectedHotbarSlot].currentItem && inventory.slots[inventory.selectedHotbarSlot].currentItem.toolToughness >= resHand.resource.toughness || resHand.resource.toughness == 0)
+                    {
+                        if (resHand.enabled)
+                        {
+                            noticeText = "Hold [LMB] to gather";
+                            canMine = true;
+                        }
+                        else
+                        {
+                            noticeText = "Unable to gather";
+                            canMine = false;
+                        }
+                    }
+                    else
                     {
 						noticeText = "Higher Tool Tier Needed";
 						canMine = false;
@@ -745,11 +755,9 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 							else
 							{
 								float multiplier = 1f;
-								bool hasTool = false;
 								if (inventory.currentSelectedItem && inventory.currentSelectedItem.type == Item.ItemType.Tool)
 								{
 									multiplier = inventory.currentSelectedItem.speed;
-									hasTool = true;
 								}
 								gatheringTime += Time.deltaTime;
 								if (currentResource == null || currentResource.gameObject != target)
@@ -759,25 +767,19 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 								progressUI.UpdateProgress(gatheringTime / (currentResource.resource.gatherTime / multiplier), currentResource.resource.gatherTime / multiplier - gatheringTime);
 								if (gatheringTime >= currentResource.resource.gatherTime / multiplier)
 								{
-									int i = 0;
-									foreach (Item item in currentResource.resource.resourceItems)
-									{
-										if (Random.Range(0f, 1f) <= currentResource.resource.chances[i])
-										{
-												inventory.AddItem(item, currentResource.Gather(hasTool ? inventory.currentSelectedItem.gatherAmount : 1));
-										}
-										i++;
-									}
+									int gathered = currentResource.ToolGather(inventory.currentSelectedItem, out Item item);
+									inventory.AddItem(item, gathered);
+
 									gatheringTime = 0f;
 									progressUI.UpdateProgress(0, 0);
-									//progressImage.fillAmount = 0f;
 									CameraShaker.Instance.ShakeOnce(2f, 3f, 0.1f, 0.3f);
 								}
+								else
+								{
+									noticeText = "Still Growing";
+								}
 							}
-						} else
-                        {
-							noticeText = "Higher Tool Tier Needed !!";
-                        }
+						}
 					}
 					else if (gathering || pickingUp)
 					{
@@ -1169,7 +1171,7 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 
 		transform.position = lightWorldEnterPoint.position;
 
-		ignoreFallDamage = true;
+		IgnoreNextFall();
 		realmNoticeText.color = lightRealmNoticeTextColor;
 		realmNoticeText.text = "ENTERING LIGHT REALM";
 		canvasAnim.SetTrigger("RealmNoticeTextEnter");
@@ -1183,11 +1185,16 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 
 		transform.position = darkWorldEnterPoint.position;
 
-		ignoreFallDamage = true;
+		IgnoreNextFall();
 		realmNoticeText.color = darkRealmNoticeTextColor;
 		realmNoticeText.text = "ENTERING DARK REALM";
 		canvasAnim.SetTrigger("RealmNoticeTextEnter");
 		Invoke("HideRealmNoticeText", 3);
+	}
+
+	public void IgnoreNextFall ()
+    {
+		ignoreFallDamage = true;
 	}
 
 	public void LoadLightWorld()
@@ -1278,13 +1285,10 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 
 	void FixedUpdate()
 	{
-		if (climbing)
+		if (grounded && !flying && jumpReady) //jump logic
 		{
-			Collider[] cols = Physics.OverlapCapsule(transform.position - Vector3.up * 0.5f, transform.position + Vector3.up * 0.5f, 0.5f);
-			if (cols.Length - 2 < 1)
-			{ // Doesn't seem to be a ladder near (Prevents flying). We do the -2 because the player and groundCheck collide with it.
-				StopClimbing();
-			}
+			rb.AddForce(transform.up * jumpForce);
+			rb.AddForce(transform.TransformDirection(moveAmount) * 50f, ForceMode.Impulse); //to transfer movement speed into the jump; what gives the player a sort of "momentum"
 		}
 
 		if (grounded)
@@ -1298,13 +1302,23 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 
 		if (climbing)
 		{
+			Collider[] cols = Physics.OverlapCapsule(transform.position - Vector3.up * 0.5f, transform.position + Vector3.up * 0.5f, 0.5f);
+			if (cols.Length - 2 < 1)
+			{ // Doesn't seem to be a ladder near (Prevents flying). We do the -2 because the player and groundCheck collide with it.
+				StopClimbing();
+			}
+
 			rb.MovePosition(rb.position + (transform.TransformDirection(Vector3.right * moveAmount.x + Vector3.up * moveAmount.y + (Vector3.forward * (moveAmount.z > 1 ? moveAmount.z : 0))) + Vector3.up * moveAmount.z) * Time.fixedDeltaTime);
 			rb.velocity = Vector3.zero;
 		}
-		else
+		else if (grounded || flying) //Normal movement on the ground
 		{
 			rb.MovePosition(rb.position + (transform.TransformDirection(moveAmount) * Time.fixedDeltaTime));
+		} else //movement in the air
+        {
+			rb.MovePosition(rb.position + (transform.TransformDirection(moveAmount) * Time.fixedDeltaTime * airMult));
 		}
 		smoothedYVelocity = (smoothedYVelocity + rb.velocity.y) / 2;
+		jumpReady = false; //this is put here so jumps can't be "queued"
 	}
 }

@@ -5,8 +5,6 @@ using UnityEngine.UI;
 
 public class VersionManager : MonoBehaviour {
 
-	[SerializeField] string version;
-
 	[SerializeField] Text versionText;
 	[SerializeField] Text newVersionText;
 
@@ -17,7 +15,7 @@ public class VersionManager : MonoBehaviour {
 	}
 
 	void Start() {
-		versionText.text = "v" + version;
+		versionText.text = "v" + Application.version; // go to Edit>Project Settings>Player and open the Other Settings tab
 		//RemoteSettings.Completed += HandleRemoteSettings;
 	}
 

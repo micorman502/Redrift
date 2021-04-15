@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91adea7c2cf48c44bab70182c5512d9d, type: 3}
+  m_Name: AutoMinerDock
+  m_EditorClassIdentifier: 
+  itemName: Auto-Miner Dock
+  itemDescription: Stores and distributes items from autominers
+  type: 2
+  subType: 0
+  id: 45
+  icon: {fileID: 21300000, guid: 26e55ed55a67d874c9da2ea10078be93, type: 3}
+  prefab: {fileID: 4412796792472647056, guid: fdcc0c349ea0ced42a23c1773f294e84, type: 3}
+  timeToGather: 0.25
+  handRotation: {x: 0, y: 0, z: 0}
+  handScale: {x: 0.25, y: 0.25, z: 0.25}
+  handPrefab: {fileID: 3043892246269817668, guid: 52cf7a2f8dd6f1a449f18528e9998785,
+    type: 3}
+  maxStackCount: 5
+  previewPrefab: {fileID: 6926035304129352827, guid: 4afe73c619fcd0c449bdfd2891683936,
+    type: 3}
+  speed: 0
+  gatherAmount: 0
+  toolToughness: 0
+  power: 0
+  fuel: 0
+  smeltItem: {fileID: 0}
+  alignToNormal: 0
+  gridSize: {x: 1, y: 1.5, z: 1}
+  rots:
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 90, z: 0}
+  - {x: 0, y: 180, z: 0}
+  - {x: 0, y: 270, z: 0}
+  achievementNumber: -1
+  calories: 0

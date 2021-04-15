@@ -19,5 +19,5 @@ MonoBehaviour:
   replacementItems: []
   replacementItemAmounts: 
   output: {fileID: 11400000, guid: 78a8b8f75c613d24cbd64b5a1014f774, type: 2}
-  outputAmount: 1
+  outputAmount: 2
   categories: 05000000
