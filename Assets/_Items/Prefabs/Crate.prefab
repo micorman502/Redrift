@@ -162,7 +162,7 @@ MonoBehaviour:
   - item: {fileID: 11400000, guid: f2812bf6142a15244bbc5eb86d78d4a2, type: 2}
     minAmount: 1
     maxAmount: 1
-    chance: 0.6
+    chance: 0.5
   lootParticles: {fileID: 1340000199260684, guid: 7cc0a795e6a2565419ddc9161bce54ae,
     type: 3}
 --- !u!54 &54344118679507228

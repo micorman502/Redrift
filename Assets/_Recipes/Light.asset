@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: Light
   m_EditorClassIdentifier: 
   inputs:
-  - {fileID: 11400000, guid: 00dd8405c3cf190449d564d4e511a9f3, type: 2}
+  - {fileID: 11400000, guid: c8dbf5dd1f4b19444a9bf9438009cb5b, type: 2}
   - {fileID: 11400000, guid: cb2b8f9de15633642b25d8a3e5609e34, type: 2}
-  amounts: 0100000001000000
+  - {fileID: 11400000, guid: 221124a2341142445ac06a74d0443d60, type: 2}
+  amounts: 020000000100000001000000
   replacementItems: []
   replacementItemAmounts: 
   output: {fileID: 11400000, guid: 78a8b8f75c613d24cbd64b5a1014f774, type: 2}
