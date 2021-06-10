@@ -4,22 +4,17 @@ using UnityEngine;
 
 public class NegateFallDamage : MonoBehaviour
 {
-    public bool negateDamage;
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    [SerializeField] bool negateDamage;
+    [SerializeField] float fallDamageMult;
 
     public bool NegateDamage ()
     {
         return negateDamage;
+    }
+
+    public float GetFallDamageMult ()
+    {
+        return fallDamageMult;
     }
 
     public void SetDamageNegate (bool val)

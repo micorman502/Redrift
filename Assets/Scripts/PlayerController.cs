@@ -9,7 +9,39 @@ using EZCameraShake;
 
 public class PlayerController : MonoBehaviour, ITakeFallDamage
 {
+	[Header ("Movement")]
+	public float mouseSensitivity;
+	public float walkSpeed;
+	public float runSpeed;
+	public float jumpForce;
+	[SerializeField] float jumpInertia;
+	[SerializeField] float airMult; //how much movement is multiplied while in the air
+	bool jumpReady;
+	public float smoothTime;
+	public LayerMask groundedMask;
 
+	[Header ("Health and Food")]
+	public float maxHealth = 100f;
+	public float health;
+	public float maxHunger = 100f;
+	public float hunger;
+
+	public float hungerLoss = 0.1f;
+	public float hungerDamage = 2f;
+
+	public float fullLevel = 90f;
+	public float fullHealthRegainAmount = 1f;
+
+	[Header ("Falling and Interactions")]
+	public float fallVelocityToDamage = 9.5f;
+	public float fallDamage = 1.5f;
+
+	public float handDamage = 15f;
+	public float interactRange = 2f;
+	public Item fuelItem;
+	int lastEatenItem = -1; //to support eating varieties of items
+
+	[Header ("Misc")]
 	public WorldManager.WorldType currentWorld;
 
 	public GameObject playerCameraHolder;
@@ -20,17 +52,6 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 	public GameObject infoText;
 
 	[HideInInspector] public Rigidbody rb;
-
-	public float mouseSensitivity;
-	public float walkSpeed;
-	public float runSpeed;
-	[SerializeField] float airMult; //how much mmovement is multiplied while in the air
-	public float jumpForce;
-	bool jumpReady; 
-	public float smoothTime;
-	public LayerMask groundedMask;
-	public float interactRange = 2f;
-	public Item fuelItem;
 
 	public ProgressManager progressUI;
 
@@ -47,8 +68,11 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 	public PostProcessingProfile lightPostProcessingProfile;
 	public PostProcessingProfile darkPostProcessingProfile;
 
+	[SerializeField] float voidHeight;
 	public Transform lightWorldEnterPoint;
+	[SerializeField] Vector3 lightWorldEnterVelocity;
 	public Transform darkWorldEnterPoint;
+	[SerializeField] Vector3 darkWorldEnterVelocity;
 
 	public Text realmNoticeText;
 	public Color lightRealmNoticeTextColor;
@@ -111,22 +135,6 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 
 	public Image healthAmountImage;
 	public Image hungerAmountImage;
-
-	public float maxHealth = 100f;
-	public float health;
-	public float maxHunger = 100f;
-	public float hunger;
-
-	public float hungerLoss = 0.1f;
-	public float hungerDamage = 2f;
-
-	public float fullLevel = 90f;
-	public float fullHealthRegainAmount = 1f;
-
-	public float impactVelocityToDamage = 1f;
-	public float impactDamage = 20f;
-
-	public float handDamage = 15f;
 
 	bool ignoreFallDamage;
 	bool climbing;
@@ -839,7 +847,7 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 			ShowNoticeText(noticeText);
 		}
 
-		if (transform.position.y < -100f)
+		if (transform.position.y < -voidHeight)
 		{
 			if (currentWorld == WorldManager.WorldType.Light)
 			{
@@ -901,11 +909,18 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 		healthAmountImage.gameObject.SetActive(false);
 	}
 
-	public void Consume(Item item)
+	public void Consume(Item item) //or eat, comment is here for reference
 	{
 		//handAnimator.SetTrigger("Consume");
 		useParticles.Play();
-		GainCalories(item.calories);
+		if (lastEatenItem == item.id)
+		{
+			GainCalories(item.calories - item.boringFoodPenalty);
+		} else
+        {
+			GainCalories(item.calories);
+		}
+		lastEatenItem = item.id;
 	}
 
 	public bool ActiveMenu()
@@ -1093,7 +1108,7 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 		NegateFallDamage nfd = source.GetComponent<NegateFallDamage>();
 		if (nfd && !nfd.NegateDamage() || !nfd)
 		{
-			if (-smoothedYVelocity >= impactVelocityToDamage && !dead && mode != 1)
+			if (-smoothedYVelocity >= fallVelocityToDamage && !dead && mode != 1)
 			{
 				if (ignoreFallDamage)
 				{
@@ -1101,7 +1116,13 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 				}
 				else
 				{
-					TakeDamage(Mathf.Pow(-smoothedYVelocity * impactDamage, 1.39f));
+					if (nfd)
+					{
+						TakeDamage(Mathf.Pow(-smoothedYVelocity * fallDamage * nfd.GetFallDamageMult(), 1.39f));
+					} else
+                    {
+						TakeDamage(Mathf.Pow(-smoothedYVelocity * fallDamage, 1.39f));
+					}
 				}
 			}
 		}
@@ -1170,6 +1191,7 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 		LoadLightWorld();
 
 		transform.position = lightWorldEnterPoint.position;
+		rb.velocity = lightWorldEnterVelocity;
 
 		IgnoreNextFall();
 		realmNoticeText.color = lightRealmNoticeTextColor;
@@ -1184,6 +1206,7 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 		LoadDarkWorld();
 
 		transform.position = darkWorldEnterPoint.position;
+		rb.velocity = darkWorldEnterVelocity;
 
 		IgnoreNextFall();
 		realmNoticeText.color = darkRealmNoticeTextColor;
@@ -1287,8 +1310,8 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 	{
 		if (grounded && !flying && jumpReady) //jump logic
 		{
-			rb.AddForce(transform.up * jumpForce);
-			rb.AddForce(transform.TransformDirection(moveAmount) * 50f, ForceMode.Impulse); //to transfer movement speed into the jump; what gives the player a sort of "momentum"
+			rb.AddForce(transform.up * jumpForce, ForceMode.VelocityChange);
+			rb.AddForce(transform.TransformDirection(moveAmount) * jumpInertia * 10f, ForceMode.Impulse); //to transfer movement speed into the jump; what gives the player a sort of "momentum"
 		}
 
 		if (grounded)
@@ -1311,7 +1334,7 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 			rb.MovePosition(rb.position + (transform.TransformDirection(Vector3.right * moveAmount.x + Vector3.up * moveAmount.y + (Vector3.forward * (moveAmount.z > 1 ? moveAmount.z : 0))) + Vector3.up * moveAmount.z) * Time.fixedDeltaTime);
 			rb.velocity = Vector3.zero;
 		}
-		else if (grounded || flying) //Normal movement on the ground
+		else if (grounded || flying) //Normal movement on the ground or flying
 		{
 			rb.MovePosition(rb.position + (transform.TransformDirection(moveAmount) * Time.fixedDeltaTime));
 		} else //movement in the air
@@ -1321,4 +1344,14 @@ public class PlayerController : MonoBehaviour, ITakeFallDamage
 		smoothedYVelocity = (smoothedYVelocity + rb.velocity.y) / 2;
 		jumpReady = false; //this is put here so jumps can't be "queued"
 	}
+
+	public void SetLastEatenItem (int id)
+    {
+		lastEatenItem = id;
+    }
+
+	public int GetLastEatenItem ()
+    {
+		return lastEatenItem;
+    }
 }

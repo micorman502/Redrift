@@ -80,7 +80,10 @@ public class InventorySlot : MonoBehaviour {
 		slotImage.sprite = emptySlotSprite;
 		stackCount = 0;
 		amountText.gameObject.SetActive(false);
-		anim.Play(); 
+		if (anim) //This is lazy, but it works. Here as there was an issue where saves would not load due to THIS creating an error. C#.
+		{
+			anim.Play();
+		}
 	}
 
 	public void OnItemClick() {

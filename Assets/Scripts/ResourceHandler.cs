@@ -52,7 +52,7 @@ public class ResourceHandler : MonoBehaviour {
 		{
 			if (Random.Range(0f, 1f) <= resource.chances[i])
 			{
-				itemReturn = resource.resourceItems[i];
+				itemReturn = resource.resourceItems[i]; //Due to how this works, it matters how resource items are arranged! The later ones have higher priority.
 			}
 		}
 		int gatherAmt = 1;

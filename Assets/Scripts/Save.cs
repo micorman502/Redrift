@@ -9,6 +9,7 @@ public class Save {
 	public SerializableQuaternion playerRotation;
 	public float playerHealth;
 	public float playerHunger;
+	public int playerLastEatenItem;
 
 	public List<SerializableVector3> worldItemPositions = new List<SerializableVector3>();
 	public List<SerializableQuaternion> worldItemRotations = new List<SerializableQuaternion>();
@@ -39,7 +40,7 @@ public class Save {
 
 	public DateTime saveTime;
 
-	public string version = "1.6.2";
+	public string version = "1.7.2"; //not necesary to change
 
 	public int worldType;
 

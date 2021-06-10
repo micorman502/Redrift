@@ -14,13 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _basicSettings:
     baseBuildFolder: C:\Users\micro\OneDrive\Documents\Redrift Builds
-    buildPath: Redrift v1.7.1 $PLATFORM
+    buildPath: Redrift v1.8 $PLATFORM
     openFolderPostBuild: 1
   _productParameters:
     buildCounter: 12
     lastGeneratedVersion: 1.7.1
-    version: 1.7.1
-    autoGenerate: 1
+    version: 1.8
+    autoGenerate: 0
   _releaseTypeList:
     releaseTypes:
     - typeName: Release

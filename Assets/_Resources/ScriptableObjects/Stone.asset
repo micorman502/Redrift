@@ -20,6 +20,6 @@ MonoBehaviour:
   chances:
   - 1
   maxGathers: 8
-  gatherTime: 8
+  gatherTime: 7
   toughness: 1
   infiniteGathers: 0

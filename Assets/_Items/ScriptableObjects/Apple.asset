@@ -13,18 +13,21 @@ MonoBehaviour:
   m_Name: Apple
   m_EditorClassIdentifier: 
   itemName: Apple
-  itemDescription: 25 calories
-  type: 3
+  itemDescription: The only food out here
   id: 26
+  maxStackCount: 100
+  type: 3
+  subType: 0
   icon: {fileID: 21300000, guid: a515e3a33e1c7fc44b017b3e69b2972b, type: 3}
   prefab: {fileID: 1219581920616964, guid: 8845b4c40068c4f449743d12ec1e3898, type: 3}
+  previewPrefab: {fileID: 0}
+  handPrefab: {fileID: 0}
   timeToGather: 0.1
   handRotation: {x: 0, y: 0, z: 0}
   handScale: {x: 1, y: 1, z: 1}
-  maxStackCount: 100
-  previewPrefab: {fileID: 0}
   speed: 0
   gatherAmount: 0
+  toolToughness: 0
   power: 0
   fuel: 0
   smeltItem: {fileID: 0}
@@ -32,4 +35,5 @@ MonoBehaviour:
   gridSize: {x: 0, y: 0, z: 0}
   rots: []
   achievementNumber: -1
-  calories: 25
+  calories: 30
+  boringFoodPenalty: 10

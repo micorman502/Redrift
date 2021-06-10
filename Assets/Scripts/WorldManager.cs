@@ -167,12 +167,12 @@ public class WorldManager : MonoBehaviour
 		RaycastHit hit;
 		if (islands[isl].spawns[spawnIndex].spawnLocation == WeightedSpawnableItem.SpawnLocation.Above) //this determines where the object spawns, above or below
 		{
-			pos = transform.TransformPoint(new Vector3(Random.insideUnitCircle.x * islands[isl].bounds, 300f, Random.insideUnitCircle.y * islands[isl].bounds));
+			pos = new Vector3(Random.insideUnitCircle.x * islands[isl].bounds, 300f, Random.insideUnitCircle.y * islands[isl].bounds);
 			rayDir = Vector3.down;
 		}
 		else if (islands[isl].spawns[spawnIndex].spawnLocation == WeightedSpawnableItem.SpawnLocation.Below)
 		{
-			pos = transform.TransformPoint(new Vector3(Random.insideUnitCircle.x * islands[isl].bounds, -300f, Random.insideUnitCircle.y * islands[isl].bounds));
+			pos = new Vector3(Random.insideUnitCircle.x * islands[isl].bounds, -300f, Random.insideUnitCircle.y * islands[isl].bounds);
 			rayDir = Vector3.up;
 		}
 		Debug.DrawRay(pos, rayDir * 100f, Color.red, 100f);

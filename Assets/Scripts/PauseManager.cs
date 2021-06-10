@@ -7,6 +7,8 @@ public class PauseManager : MonoBehaviour {
 
 	PlayerController player;
 
+	[SerializeField] Inventory playerInventory;
+
 	public GameObject pauseMenu;
 
 	float originalTimeScale;
@@ -20,12 +22,22 @@ public class PauseManager : MonoBehaviour {
 		player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
 	}
 	
-	void Update() {
-		if(Input.GetKeyDown(KeyCode.Escape)) {
-			if(paused) {
-				Resume();
-			} else {
-				Pause();
+	void Update() { //lateupdate as this is executed after the inventory opening / closing is done
+		if(Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.P)) {
+			if (playerInventory && playerInventory.InventoryOpen())
+			{
+				playerInventory.SetInventoryState(false);
+			}
+			else
+			{
+				if (paused)
+				{
+					Resume();
+				}
+				else
+				{
+					Pause();
+				}
 			}
 		}
 	}

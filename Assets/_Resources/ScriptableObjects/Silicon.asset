@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53d39e7a4c9ac5a40b92a8a9a7ba92eb, type: 3}
   m_Name: Silicon
   m_EditorClassIdentifier: 
-  prefab: {fileID: 0}
+  prefab: {fileID: 7779611211482041147, guid: 3ee109a0fccde654597a1fabe6c8b23e, type: 3}
   type: 3
   id: 8
   resourceItems:
@@ -20,6 +20,6 @@ MonoBehaviour:
   chances:
   - 1
   maxGathers: 1
-  gatherTime: 10
+  gatherTime: 11
   toughness: 2
   infiniteGathers: 0

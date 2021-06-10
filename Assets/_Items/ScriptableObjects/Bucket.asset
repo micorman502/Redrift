@@ -13,18 +13,21 @@ MonoBehaviour:
   m_Name: Bucket
   m_EditorClassIdentifier: 
   itemName: Bucket
-  itemDescription: Fill it with water or use it as decoration!
+  itemDescription: '"Useful" for making ice'
   type: 0
+  subType: 0
   id: 32
   icon: {fileID: 21300000, guid: 0b463bb90b5fb424abcbd70d84e0a237, type: 3}
   prefab: {fileID: 1866602517762588, guid: 8ab3016be8d000144b2d098465c24525, type: 3}
   timeToGather: 0.25
   handRotation: {x: -13.997, y: 0, z: 0}
   handScale: {x: 0.75, y: 0.75, z: 0.75}
+  handPrefab: {fileID: 0}
   maxStackCount: 20
   previewPrefab: {fileID: 0}
   speed: 0
   gatherAmount: 0
+  toolToughness: 0
   power: 0
   fuel: 0
   smeltItem: {fileID: 0}

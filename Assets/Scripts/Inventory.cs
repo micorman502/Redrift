@@ -24,6 +24,7 @@ public class Inventory : MonoBehaviour {
 	public List<InventorySlot> slots = new List<InventorySlot>();
 
 	PlayerController player;
+	[SerializeField] RecipeManager recipeManager;
 
 	AchievementManager achievementManager;
 	AudioManager audioManager;
@@ -50,6 +51,8 @@ public class Inventory : MonoBehaviour {
 
 	int slotID = 0;
 
+	[SerializeField] bool inventoryOpen;
+
 	void Awake() {
 		audioManager = FindObjectOfType<AudioManager>();
 		achievementManager = FindObjectOfType<AchievementManager>();
@@ -70,9 +73,10 @@ public class Inventory : MonoBehaviour {
 	
 	public void LoadCreativeMode() {
 		mode = 1;
+		//removed due to the new RemoveAllCraftingCosts functionality.
 
 		// Add extra slots to the inventory so it can contain every item
-		int i = 0;
+		/*int i = 0;
 		foreach(Transform slotHolder in slotHolders) {
 			foreach(Transform slot in slotHolder) {
 				i++;
@@ -98,36 +102,20 @@ public class Inventory : MonoBehaviour {
 		AddAllItems();
 		foreach(InventorySlot slot in slots) {
 			slot.LoadCreativeMode();
-		}
-		craftingContainer.SetActive(false);
+		}*/
+		recipeManager.RemoveAllCraftingCosts();
 	}
 
 	public void Pickup(ItemHandler itemHandler) {
-		if(mode != 1) {
-			AddItem(itemHandler.item, 1); //TODO: Check if inventory is full first!
-		}
+		AddItem(itemHandler.item, 1); //TODO: Check if inventory is full first!
 		itemHandler.GetDestroyed();
 	}
 
 	void Update() {
 
 		if(Input.GetKeyDown(KeyCode.Tab) && !pauseManager.Paused()) {
-			inventoryContainer.SetActive(!inventoryContainer.activeSelf);
-			player.LockLook(inventoryContainer.activeSelf);
-			if(inventoryContainer.activeSelf) {
-				Cursor.lockState = CursorLockMode.None;
-				Cursor.visible = true;
-				player.StopGathering();
-			} else {
-				Cursor.lockState = CursorLockMode.Locked;
-				Cursor.visible = false;
-				LeaveHoveredItem();
-				/*
-				foreach(InventorySlot slot in slots) {
-					slot.OnInventoryClose();
-				}
-				*/
-			}
+			inventoryOpen = !inventoryOpen;
+			UpdateInventoryVisibility();
 		}
 
 		for(int i = 1; i < hotbar.childCount + 1; i++) {
@@ -351,46 +339,60 @@ public class Inventory : MonoBehaviour {
 	}
 
 	public void AddItem(Item item, int amount) {
-		for(int q = 0; q < amount; q++) { // NOT SUSTAINABLE
-			bool full = true;
+		if (item != null && amount > 0)
+		{
+			for (int q = 0; q < amount; q++)
+			{ // NOT SUSTAINABLE
+				bool full = true;
 
-			for(int i = 0; i < slots.Count; i++) {
-				InventorySlot inventorySlot = slots[i].GetComponent<InventorySlot>();
-				if(inventorySlot.currentItem) {
-					if(inventorySlot.currentItem.id == item.id) {
-						if(inventorySlot.stackCount < item.maxStackCount || mode == 1) {
-							inventorySlot.IncreaseItem(1);
+				for (int i = 0; i < slots.Count; i++)
+				{
+					InventorySlot inventorySlot = slots[i].GetComponent<InventorySlot>();
+					if (inventorySlot.currentItem)
+					{
+						if (inventorySlot.currentItem.id == item.id)
+						{
+							if (inventorySlot.stackCount < item.maxStackCount || mode == 1)
+							{
+								inventorySlot.IncreaseItem(1);
+								full = false;
+								break;
+							}
+						}
+					}
+				}
+
+				if (full)
+				{
+					for (int i = 0; i < slots.Count; i++)
+					{
+						InventorySlot inventorySlot = slots[i].GetComponent<InventorySlot>();
+						if (!inventorySlot.currentItem)
+						{
+							inventorySlot.SetItem(item, 1);
 							full = false;
 							break;
 						}
 					}
 				}
-			}
 
-			if(full) {
-				for(int i = 0; i < slots.Count; i++) {
-					InventorySlot inventorySlot = slots[i].GetComponent<InventorySlot>();
-					if(!inventorySlot.currentItem) {
-						inventorySlot.SetItem(item, 1);
-						full = false;
-						break;
+				if (full)
+				{
+					Debug.Log("Inventory Full");
+					if (mode != 1)
+					{
+						DropItem(item, 1);
 					}
 				}
 			}
 
-			if(full) {
-				Debug.Log("Inventory Full");
-				if(mode != 1) {
-					DropItem(item, 1);
-				}
+			if (item.achievementNumber != -1)
+			{
+				achievementManager.GetAchievement(item.achievementNumber);
 			}
-		}
 
-		if(item.achievementNumber != -1) {
-			achievementManager.GetAchievement(item.achievementNumber);
+			InventoryUpdate();
 		}
-
-		InventoryUpdate();
 	}
 
 	public void SetItem(Item item, int amount, int _slotID) {
@@ -650,6 +652,11 @@ public class Inventory : MonoBehaviour {
 		}
 	}
 
+	public void ConstructFreeRecipe(Recipe recipe, int amount)
+	{
+		AddItem(recipe.output, recipe.outputAmount * amount);
+	}
+
 	public void InventoryUpdate() {
 		currentSelectedItem = hotbar.GetChild(selectedHotbarSlot).GetComponent<InventorySlot>().currentItem;
 		player.InventoryUpdate();
@@ -657,4 +664,33 @@ public class Inventory : MonoBehaviour {
 			craftingRecipeObj.GetComponent<CraftingRecipe>().InventoryUpdate();
 		}
 	}
+
+	void UpdateInventoryVisibility ()
+    {
+		inventoryContainer.SetActive(inventoryOpen);
+		player.LockLook(inventoryOpen);
+		if (inventoryOpen)
+		{
+			Cursor.lockState = CursorLockMode.None;
+			Cursor.visible = true;
+			player.StopGathering();
+		}
+		else
+		{
+			Cursor.lockState = CursorLockMode.Locked;
+			Cursor.visible = false;
+			LeaveHoveredItem();
+		}
+	}
+
+	public bool InventoryOpen ()
+    {
+		return inventoryOpen;
+    }
+
+	public void SetInventoryState (bool state)
+    {
+		inventoryOpen = state;
+		UpdateInventoryVisibility();
+    }
 }

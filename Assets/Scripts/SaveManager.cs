@@ -299,6 +299,7 @@ public class SaveManager : MonoBehaviour {
 			player.transform.rotation = save.playerRotation;
 			player.hunger = save.playerHunger;
 			player.health = save.playerHealth;
+			player.SetLastEatenItem(save.playerLastEatenItem);
 
 			if(save.playerDead) {
 				player.Die();
@@ -360,6 +361,7 @@ public class SaveManager : MonoBehaviour {
 		save.playerRotation = player.transform.rotation;
 		save.playerHealth = player.health;
 		save.playerHunger = player.hunger;
+		save.playerLastEatenItem = player.GetLastEatenItem();
 		save.saveTime = DateTime.Now;
 
 		if(player.currentWorld == WorldManager.WorldType.Light) {

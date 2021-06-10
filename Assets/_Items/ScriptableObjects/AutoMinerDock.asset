@@ -34,7 +34,7 @@ MonoBehaviour:
   fuel: 0
   smeltItem: {fileID: 0}
   alignToNormal: 0
-  gridSize: {x: 1, y: 1.5, z: 1}
+  gridSize: {x: 1, y: 1, z: 1}
   rots:
   - {x: 0, y: 0, z: 0}
   - {x: 0, y: 90, z: 0}

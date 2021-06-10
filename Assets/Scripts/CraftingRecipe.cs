@@ -22,6 +22,7 @@ public class CraftingRecipe : MonoBehaviour {
 	Button recipeButton;
 
 	bool initialized;
+	bool freeRecipe;
 
 	void Initialize() {
 		inventory = GameObject.FindGameObjectWithTag("Player").GetComponent<Inventory>();
@@ -60,16 +61,23 @@ public class CraftingRecipe : MonoBehaviour {
 	}
 
 	public void OnRecipeClick() {
-		if(inventory.CheckRecipe(recipe)) {
-			inventory.ConstructRecipe(recipe);
-		}
+		if (!freeRecipe)
+		{
+			if (inventory.CheckRecipe(recipe))
+			{
+				inventory.ConstructRecipe(recipe);
+			}
+		} else
+        {
+			inventory.ConstructFreeRecipe(recipe, 3);
+        }
 	}
 
 	public void InventoryUpdate() {
 		if(!initialized) {
 			Initialize();
 		}
-		if(inventory.CheckRecipe(recipe)) {
+		if(inventory.CheckRecipe(recipe) || freeRecipe) {
 			/*ColorBlock colors = originalColors;
 			colors.normalColor += posColorTint;
 			colors.highlightedColor += posColorTint;
@@ -93,4 +101,9 @@ public class CraftingRecipe : MonoBehaviour {
 	public void OnItemPointerExit() {
 		inventory.LeaveHoveredItem();
 	}
+
+	public void SetFreeRecipe (bool state)
+    {
+		freeRecipe = state;
+    }
 }

@@ -21,8 +21,9 @@ MonoBehaviour:
   prefab: {fileID: 60708580718769938, guid: a86af0f8fa06e23458bc4ef9d7886fd1, type: 3}
   timeToGather: 0.25
   handRotation: {x: 0, y: 0, z: 0}
-  handScale: {x: 0.3, y: 0.3, z: 0.3}
-  handPrefab: {fileID: 0}
+  handScale: {x: 0.625, y: 0.25, z: 0.625}
+  handPrefab: {fileID: 1185962850684382667, guid: fb5deee5bba602d4a8036255eaec0991,
+    type: 3}
   maxStackCount: 1
   previewPrefab: {fileID: 8476925708706814377, guid: 4390da4f295e19149afb152d2f8f8b89,
     type: 3}

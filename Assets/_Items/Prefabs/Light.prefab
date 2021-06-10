@@ -130,9 +130,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   intensities:
   - 0
-  - 0.25
   - 0.5
   - 1
+  - 1.5
   intensityNum: 1
   active: 1
 --- !u!65 &65838650293111228
@@ -191,7 +191,7 @@ Light:
   m_Type: 2
   m_Color: {r: 0.880899, g: 0.6933962, b: 1, a: 1}
   m_Intensity: 0.5
-  m_Range: 20
+  m_Range: 30
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10

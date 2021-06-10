@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Crate
   m_EditorClassIdentifier: 
   itemName: Crate
-  itemDescription: Open to get random loot.
+  itemDescription: Open to get random loot
   type: 0
   subType: 0
   id: 12
