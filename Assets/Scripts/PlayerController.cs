@@ -7,8 +7,41 @@ using UnityEngine.AI;
 using UnityEngine.PostProcessing;
 using EZCameraShake;
 
-public class PlayerController : MonoBehaviour {
+public class PlayerController : MonoBehaviour, ITakeFallDamage
+{
+	[Header ("Movement")]
+	public float mouseSensitivity;
+	public float walkSpeed;
+	public float runSpeed;
+	public float jumpForce;
+	[SerializeField] float jumpInertia;
+	[SerializeField] float airMult; //how much movement is multiplied while in the air
+	bool jumpReady;
+	public float smoothTime;
+	public LayerMask groundedMask;
 
+	[Header ("Health and Food")]
+	public float maxHealth = 100f;
+	public float health;
+	public float maxHunger = 100f;
+	public float hunger;
+
+	public float hungerLoss = 0.1f;
+	public float hungerDamage = 2f;
+
+	public float fullLevel = 90f;
+	public float fullHealthRegainAmount = 1f;
+
+	[Header ("Falling and Interactions")]
+	public float fallVelocityToDamage = 9.5f;
+	public float fallDamage = 1.5f;
+
+	public float handDamage = 15f;
+	public float interactRange = 2f;
+	public Item fuelItem;
+	int lastEatenItem = -1; //to support eating varieties of items
+
+	[Header ("Misc")]
 	public WorldManager.WorldType currentWorld;
 
 	public GameObject playerCameraHolder;
@@ -20,21 +53,9 @@ public class PlayerController : MonoBehaviour {
 
 	[HideInInspector] public Rigidbody rb;
 
-	public float mouseSensitivityX;
-	public float mouseSensitivityY;
-	public float walkSpeed;
-	public float runSpeed;
-	public float jumpForce;
-	public float smoothTime;
-	public LayerMask groundedMask;
-	public float interactRange = 2f;
-	public Item fuelItem;
+	public ProgressManager progressUI;
 
-	public GameObject progressContainer;
-	public Image progressImage;
-	public Text progressText;
-
-	public Text tooltipText;
+	public Text noticeText;
 
 	public Transform purgatorySpawn;
 	public TextMesh purgatoryRespawnTimeText;
@@ -47,22 +68,27 @@ public class PlayerController : MonoBehaviour {
 	public PostProcessingProfile lightPostProcessingProfile;
 	public PostProcessingProfile darkPostProcessingProfile;
 
+	[SerializeField] float voidHeight;
 	public Transform lightWorldEnterPoint;
+	[SerializeField] Vector3 lightWorldEnterVelocity;
 	public Transform darkWorldEnterPoint;
+	[SerializeField] Vector3 darkWorldEnterVelocity;
 
-	public Text realmtooltipText;
-	public Color lightRealmtooltipTextColor;
-	public Color darkRealmtooltipTextColor;
+	public Text realmNoticeText;
+	public Color lightRealmNoticeTextColor;
+	public Color darkRealmNoticeTextColor;
 
 	public ParticleSystem useParticles;
 
 	private float verticalLookRotation;
 
-	private float currentMoveSpeed;
-	private Vector3 moveAmount;
-	private Vector3 smoothMoveVelocity;
+	float smoothedYVelocity;
+	float currentMoveSpeed;
+	Vector3 moveAmount;
+	Vector3 smoothMoveVelocity;
 
 	[HideInInspector] public Inventory inventory;
+	AchievementManager achievementManager;
 	AudioManager audioManager;
 	PauseManager pauseManager;
 	SettingsManager settingsManager;
@@ -72,17 +98,15 @@ public class PlayerController : MonoBehaviour {
 
 	[HideInInspector] public bool grounded;
 
-	[HideInInspector] public float distanceToTarget; // Accesible from other GameObjects to see if they are in range of interaction and such //bruh
+	[HideInInspector] public float distanceToTarget; // Accesible from other GameObjects to see if they are in range of interaction and such
 	[HideInInspector] public GameObject target;
 	[HideInInspector] public RaycastHit targetHit;
 
 	GameObject currentHandObj;
 
-	private Vector3 spawnpoint;
+	Vector3 spawnpoint;
 
-	private Quaternion startRot;
-
-	bool inMenu;
+	Quaternion startRot;
 
 	bool lockLook;
 	bool gathering = false;
@@ -91,6 +115,7 @@ public class PlayerController : MonoBehaviour {
 	bool pickingUp = false;
 	float pickingUpTime;
 
+	bool consuming = false;
 	float consumeTime;
 
 	bool firing = false;
@@ -104,28 +129,12 @@ public class PlayerController : MonoBehaviour {
 	Color defaultPlayerCameraColor;
 
 	float nextTimeToRespawn;
-	float respawnTime = 15f;
+	float respawnTime = 7.5f;
 
 	[HideInInspector] public bool dead = false;
 
 	public Image healthAmountImage;
 	public Image hungerAmountImage;
-
-	public float maxHealth = 100f;
-	public float health;
-	public float maxHunger = 100f;
-	public float hunger;
-
-	public float hungerLoss = 0.1f;
-	public float hungerDamage = 2f;
-
-	public float fullLevel = 90f;
-	public float fullHealthRegainAmount = 1f;
-
-	public float impactVelocityToDamage = 1f;
-	public float impactDamage = 20f;
-
-	public float handDamage = 15f;
 
 	bool ignoreFallDamage;
 	bool climbing;
@@ -135,23 +144,29 @@ public class PlayerController : MonoBehaviour {
 	float flyDoubleTapCooldown;
 	bool flying;
 
+	float interactKeyHeldDelay = 0.6f; // time until "F" / interact key can be held to put in lots of items / interact alot.
+	float interactKeyHeldTime; //when time is over this value, if f key is held, constantly try to add an item.
+	bool interactKeyPressed;
+
 	WeaponHandler currentWeaponHandler;
 	Animator currentWeaponAnimator;
 
 	ResourceHandler currentResource;
+
+	//PostProcessingProfile defaultLightProfile;
+	//PostProcessingProfile defaultDarkProfile;
 
 	float originalDrag;
 	float flyingDrag = 10f;
 
 	PersistentData persistentData;
 
-	GameObject lastTooltipGameObject;
-	GameObject lastInteractionGameObject;
-
-	void Awake() {
+	void Awake()
+	{
 		GameObject scriptHolder = GameObject.FindGameObjectWithTag("ScriptHolder");
 		audioManager = scriptHolder.GetComponent<AudioManager>();
 		pauseManager = scriptHolder.GetComponent<PauseManager>();
+		achievementManager = scriptHolder.GetComponent<AchievementManager>();
 		settingsManager = scriptHolder.GetComponent<SettingsManager>();
 		canvasAnim = canvas.GetComponent<Animator>();
 
@@ -163,19 +178,15 @@ public class PlayerController : MonoBehaviour {
 		defaultFogColor = RenderSettings.fogColor;
 		defaultFogDensity = RenderSettings.fogDensity;
 		defaultPlayerCameraColor = playerCamera.GetComponent<Camera>().backgroundColor;
-
-		PlayerEvents.OnLockStateSet += (bool _locked) => { LockLook(_locked); SetInMenuState(!_locked); };
 	}
 
-    void OnDisable()
-    {
-		PlayerEvents.OnLockStateSet = (bool _locked) => { };
-	}
-
-    void Start() {
+	void Start()
+	{
 		health = maxHealth;
 		hunger = maxHunger;
-		LookLocker.Instance.SetLockedState(true);
+		Cursor.lockState = CursorLockMode.Locked;
+		Cursor.visible = false;
+		LockLook(false);
 
 		//defaultLightProfile = lightPostProcessingProfile;
 		//defaultDarkProfile = darkPostProcessingProfile;
@@ -183,137 +194,181 @@ public class PlayerController : MonoBehaviour {
 		difficulty = FindObjectOfType<SaveManager>().difficulty;
 
 		persistentData = FindObjectOfType<PersistentData>();
-		if(!dead && !persistentData.loadSave) {
+		if (!dead && !persistentData.loadSave)
+		{
 			currentWorld = WorldManager.WorldType.Light;
 			EnterLightWorld();
+		} else
+        {
+			IgnoreNextFall();
 		}
 	}
 
-	public void InventoryUpdate() {
-		if(inventory.currentSelectedItem) {
-			if(currentHandObj) {
+	public void InventoryUpdate()
+	{
+		if (inventory.currentSelectedItem)
+		{
+			if (currentHandObj)
+			{
 				Destroy(currentHandObj);
 			}
-			GameObject obj = Instantiate(inventory.currentSelectedItem.prefab, handContainer.transform) as GameObject;
+			GameObject obj = Instantiate(inventory.GetHandObject(), handContainer.transform) as GameObject;
 			obj.transform.Rotate(inventory.currentSelectedItem.handRotation);
 			obj.transform.localScale = inventory.currentSelectedItem.handScale;
-			ItemHandler handler = obj.GetComponent<ItemHandler>();
-			if (handler)
-            {
-				handler.SetSaveID(-1);
-            }
-			
 			Rigidbody objRB = obj.GetComponent<Rigidbody>();
-			if(objRB) {
-				objRB.isKinematic = true;
+			if (objRB)
+			{
+				Destroy(objRB);
 			}
 			Collider[] cols = obj.GetComponentsInChildren<Collider>();
-			if(cols.Length > 0) {
-				foreach(Collider col in cols) {
+			if (cols.Length > 0)
+			{
+				foreach (Collider col in cols)
+				{
 					col.enabled = false;
 				}
 			}
 			AudioSource[] audioSources = obj.GetComponentsInChildren<AudioSource>();
-			if(audioSources.Length > 0) {
-				foreach(AudioSource audio in audioSources) {
+			if (audioSources.Length > 0)
+			{
+				foreach (AudioSource audio in audioSources)
+				{
 					audio.enabled = false;
 				}
 			}
-			if(inventory.currentSelectedItem.id == 23) { // AutoMiner
+			if (inventory.currentSelectedItem.id == 23)
+			{ // AutoMiner
 				obj.GetComponent<AutoMiner>().enabled = false;
 				obj.GetComponent<NavMeshAgent>().enabled = false;
-			} else if(inventory.currentSelectedItem.id == 32 || inventory.currentSelectedItem.id == 33) { // Bucket or WaterBucket
+			}
+			else if (inventory.currentSelectedItem.id == 32 || inventory.currentSelectedItem.id == 33)
+			{ // Bucket or WaterBucket
 				Bucket bucket = obj.GetComponent<Bucket>();
-				if(bucket) {
+				if (bucket)
+				{
 					bucket.enabled = false;
 				}
-			} else if(inventory.currentSelectedItem.id == 20) { // Lightning Stone
+			}
+			else if (inventory.currentSelectedItem.id == 20)
+			{ // Lightning Stone
 				LightningStone ls = obj.GetComponent<LightningStone>();
-				if(ls) {
+				if (ls)
+				{
 					ls.enabled = false;
 				}
-			} else if(inventory.currentSelectedItem.id == 35) {
+			}
+			else if (inventory.currentSelectedItem.id == 35)
+			{
 				LightItem li = obj.GetComponent<LightItem>();
-				if(li) {
+				if (li)
+				{
 					li.enabled = false;
 				}
 			}
 			obj.tag = "Untagged";
-			foreach(Transform trans in obj.transform) {
+			foreach (Transform trans in obj.transform)
+			{
 				trans.tag = "Untagged";
 			}
 
 			currentHandObj = obj;
 
-			if(inventory.currentSelectedItem.type == Item.ItemType.Weapon) {
+			if (inventory.currentSelectedItem.type == Item.ItemType.Weapon)
+			{
 				currentWeaponHandler = currentHandObj.GetComponent<WeaponHandler>();
 				currentWeaponAnimator = currentHandObj.GetComponent<Animator>();
-			} else {
+			}
+			else
+			{
 				currentWeaponHandler = null;
 				currentWeaponAnimator = null;
 			}
 
-		} else if(currentHandObj) {
+		}
+		else if (currentHandObj)
+		{
 			Destroy(currentHandObj);
 			currentHandObj = null;
 			currentWeaponHandler = null;
 		}
 	}
 
-	void Update() {
-		if(!dead && mode != 1) {
+	void Update()
+	{
+		ManageBuildingInteractKey();
+
+		if (!dead && mode != 1)
+		{
 			LoseCalories(Time.deltaTime * hungerLoss);
-			if(hunger <= 10f) {
+			if (hunger <= 10f)
+			{
 				TakeEffectDamage(Time.deltaTime * hungerDamage);
-				if(!infoText.activeSelf) {
+				if (!infoText.activeSelf)
+				{
 					infoText.SetActive(true);
 				}
-			} else if(infoText.activeSelf) {
+			}
+			else if (infoText.activeSelf)
+			{
 				infoText.SetActive(false);
 			}
 		}
 
-		if(hunger >= fullLevel) {
+		if (hunger >= fullLevel)
+		{
 			GainHealth(Time.deltaTime * fullHealthRegainAmount);
 		}
 
-		if(lockLook) {
-			transform.Rotate(Vector3.up * Input.GetAxisRaw("Mouse X") * mouseSensitivityX);
-			verticalLookRotation += Input.GetAxisRaw("Mouse Y") * mouseSensitivityY;
+		if (!lockLook)
+		{
+			transform.Rotate(Vector3.up * Input.GetAxisRaw("Mouse X") * mouseSensitivity);
+			verticalLookRotation += Input.GetAxisRaw("Mouse Y") * mouseSensitivity;
 			verticalLookRotation = Mathf.Clamp(verticalLookRotation, -90, 90);
 			playerCameraHolder.transform.localEulerAngles = Vector3.left * verticalLookRotation;
 		}
 
 		Vector3 moveDir = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized;
 
-		if(Input.GetButton("Sprint")) {
+		if (Input.GetButton("Sprint"))
+		{
 			currentMoveSpeed = runSpeed;
-		} else {
+		}
+		else
+		{
 			currentMoveSpeed = walkSpeed;
 		}
 
-		if(Input.GetButtonDown("Jump")) {
-			if(mode == 1) {
-				if(flyDoubleTapCooldown > 0f) {
-					if(flying) {
+		if (Input.GetButtonDown("Jump"))
+		{
+			jumpReady = true;
+			if (mode == 1)
+			{
+				if (flyDoubleTapCooldown > 0f)
+				{
+					if (flying)
+					{
 						StopFlying();
-					} else {
+					}
+					else
+					{
 						StartFlying();
 					}
-				} else {
+				}
+				else
+				{
 					flyDoubleTapCooldown = 0.5f;
 				}
 			}
-			if(grounded && !flying) {
-				rb.AddForce(transform.up * jumpForce);
-			}
 		}
-		
-		if(flying) { // In future make axis!
-			if(Input.GetButton("Jump")) {
+
+		if (flying)
+		{ // In future make axis!
+			if (Input.GetButton("Jump"))
+			{
 				moveDir.y = 1;
 			}
-			if(Input.GetButton("Crouch")) {
+			if (Input.GetButton("Crouch"))
+			{
 				moveDir.y = -1;
 			}
 		}
@@ -324,12 +379,17 @@ public class PlayerController : MonoBehaviour {
 
 		flyDoubleTapCooldown -= Time.deltaTime;
 
-		if(Input.GetKey(KeyCode.C)) {
-			if(canvas.activeSelf) {
+		if (Input.GetKey(KeyCode.C))
+		{
+			if (canvas.activeSelf)
+			{
 				canvas.SetActive(false);
 			}
-		} else {
-			if(!canvas.activeSelf) {
+		}
+		else
+		{
+			if (!canvas.activeSelf)
+			{
 				canvas.SetActive(true);
 			}
 		}
@@ -341,68 +401,91 @@ public class PlayerController : MonoBehaviour {
 
 		distanceToTarget = hit.distance;
 
-		bool hideTooltipText = false;
-		string tooltipText = string.Empty;
+		bool hideNoticeText = false;
+		string noticeText = string.Empty;
 
-		if(!inMenu) {
-			if(currentWeaponHandler && currentWeaponHandler.weapon.type == Weapon.WeaponType.Bow) {
-				if(!firing) {
+		if (!ActiveMenu())
+		{
+			if (currentWeaponHandler && currentWeaponHandler.weapon.type == Weapon.WeaponType.Bow)
+			{
+				if (!firing)
+				{
 					firing = true;
 					currentWeaponAnimator.SetBool("PullingBack", true);
 				}
-				if(Input.GetMouseButton(2) || Input.GetAxisRaw("ControllerTriggers") >= 0.1f) {
-					if(drawTime < currentWeaponHandler.weapon.chargeTime) {
+				if (Input.GetMouseButton(2) || Input.GetAxisRaw("ControllerTriggers") >= 0.1f)
+				{
+					if (drawTime < currentWeaponHandler.weapon.chargeTime)
+					{
 						drawTime++;
 					}
 				}
-			} else if(firing) {
+			}
+			else if (firing)
+			{
 				firing = false;
 				currentWeaponAnimator.SetTrigger("Fire");
 				currentWeaponAnimator.SetBool("PullingBack", false);
 			}
 
-			if(hit.collider) {
+			if (hit.collider)
+			{
 				target = hit.collider.gameObject;
 				targetHit = hit;
 
-				if(Input.GetMouseButtonDown(0) || Input.GetAxisRaw("ControllerTriggers") <= -0.1f) {
-					if(hit.collider.CompareTag("Resource")) {
-						if(distanceToTarget >= interactRange) {
+				if (Input.GetMouseButtonDown(0) || Input.GetAxisRaw("ControllerTriggers") <= -0.1f)
+				{
+					if (hit.collider.CompareTag("Resource"))
+					{
+						if (distanceToTarget >= interactRange)
+						{
 							Attack();
 						}
-					} else {
+					}
+					else
+					{
 						Attack();
 					}
 				}
 
-				if(target.CompareTag("Item") && distanceToTarget <= interactRange && !inventory.placingStructure) {
+				if (target.CompareTag("Item") && distanceToTarget <= interactRange && !inventory.placingStructure)
+				{
 					AutoMiner autoMiner = null;
 					ItemHandler itemHandler = target.GetComponentInParent<ItemHandler>();
-					if(itemHandler.item.id == 12) { // Is it a crate?
-						tooltipText = "Hold [E] to pick up, [F] to open";
-						if(Input.GetButton("Interact")) {
+					if (itemHandler.item.id == 12)
+					{ // Is it a crate?
+						noticeText = "Hold [E] to pick up, [F] to open";
+						if (Input.GetButton("Interact"))
+						{
 							itemHandler.GetComponent<LootContainer>().Open();
-							AchievementManager.Instance.GetAchievement(7); // Looter Achievement
+							achievementManager.GetAchievement(7); // Looter Achievement
 						}
-					} else if(itemHandler.item.id == 23) { // Auto Miner
+					}
+					else if (itemHandler.item.id == 23)
+					{ // Auto Miner
 
 						autoMiner = itemHandler.GetComponent<AutoMiner>();
 
-						if(inventory.currentSelectedItem && inventory.currentSelectedItem.type == Item.ItemType.Tool) {
-							tooltipText = "Hold [E] to pick up, [F] to replace tool";
+						if (inventory.currentSelectedItem && inventory.currentSelectedItem.type == Item.ItemType.Tool)
+						{
+							noticeText = "Hold [E] to pick up, [F] to replace tool";
 
-							if(Input.GetButton("Interact")) {
+							if (Input.GetButton("Interact"))
+							{
 								autoMiner.SetTool(inventory.currentSelectedItem);
-								inventory.RemoveItem(inventory.selectedHotbarSlot, 1); //COME BACK
-								//inventory.hotbar.GetChild(inventory.selectedHotbarSlot).GetComponent<InventorySlot>().DecreaseItem(1);
-								//inventory.InventoryUpdate();
+								inventory.hotbar.GetChild(inventory.selectedHotbarSlot).GetComponent<InventorySlot>().DecreaseItem(1);
+								inventory.InventoryUpdate();
 							}
 
-						} else {
-							tooltipText = "Hold [E] to pick up, [F] to gather items";
-							if(Input.GetButton("Interact")) {
+						}
+						else
+						{
+							noticeText = "Hold [E] to pick up, [F] to gather items";
+							if (Input.GetButton("Interact"))
+							{
 								int i = 0;
-								foreach(Item item in autoMiner.items) {
+								foreach (Item item in autoMiner.items)
+								{
 									inventory.AddItem(item, autoMiner.itemAmounts[i]);
 									i++;
 								}
@@ -412,268 +495,464 @@ public class PlayerController : MonoBehaviour {
 								autoMiner.ClearItems();
 							}
 						}
-					} else if(itemHandler.item.id == 24) { // Door
+					}
+					else if (itemHandler.item.id == 24)
+					{ // Door
 						Door door = itemHandler.GetComponent<Door>();
-						if(door.open) {
-							tooltipText = "Hold [E] to pick up, [F] to close door";
-						} else {
-							tooltipText = "Hold [E] to pick up, [F] to open door";
+						if (door.open)
+						{
+							noticeText = "Hold [E] to pick up, [F] to close door";
 						}
-						if(Input.GetButtonDown("Interact")) {
+						else
+						{
+							noticeText = "Hold [E] to pick up, [F] to open door";
+						}
+						if (Input.GetButtonDown("Interact"))
+						{
 							door.ToggleOpen();
 						}
-					} else if(itemHandler.item.id == 25) { // Conveyor belt
+					}
+					else if (itemHandler.item.subType == Item.ItemSubType.Conveyor)
+					{ // Conveyor belt
 						ConveyorBelt conveyor = itemHandler.GetComponent<ConveyorBelt>();
-						tooltipText = "Hold [E] to pick up, [F] to change speed. Current speed is " + conveyor.speeds[conveyor.speedNum];
-						if(Input.GetButtonDown("Interact")) {
+						noticeText = "Hold [E] to pick up, [F] to change speed. Current speed is " + conveyor.speeds[conveyor.speedNum];
+						if (Input.GetButtonDown("Interact"))
+						{
 							conveyor.IncreaseSpeed();
 						}
-					} else if(itemHandler.item.id == 27) { // Auto Sorter
+					}
+					else if (itemHandler.item.id == 27)
+					{ // Auto Sorter
 						AutoSorter sorter = itemHandler.GetComponent<AutoSorter>();
-						if(inventory.currentSelectedItem) {
-							tooltipText = "Hold [E] to pick up, [F] set sorting item";
-							if(Input.GetButtonDown("Interact")) {
+						if (inventory.currentSelectedItem)
+						{
+							noticeText = "Hold [E] to pick up, [F] set sorting item";
+							if (Input.GetButtonDown("Interact"))
+							{
 								sorter.SetItem(inventory.currentSelectedItem);
 							}
-						} else {
-							tooltipText = "Hold [E] to pick up";
 						}
-					} else if(itemHandler.item.id == 30) { // Radio
+						else
+						{
+							noticeText = "Hold [E] to pick up";
+						}
+					}
+					else if (itemHandler.item.id == 30)
+					{ // Radio
 						Radio radio = itemHandler.GetComponent<Radio>();
-						if(radio.songNum == -1) {
-							tooltipText = "Hold [E] to pick up, [F] to turn on";
-						} else if(radio.songNum == radio.songs.Length - 1) {
-							tooltipText = "Hold [E] to pick up, [F] to turn off. Currently playing " + radio.songs[radio.songNum].name;
-						} else {
-							tooltipText = "Hold [E] to pick up, [F] to change song. Currently playing " + radio.songs[radio.songNum].name;
+						if (radio.songNum == -1)
+						{
+							noticeText = "Hold [E] to pick up, [F] to turn on";
 						}
-						if(Input.GetButtonDown("Interact")) {
+						else if (radio.songNum == radio.songs.Length - 1)
+						{
+							noticeText = "Hold [E] to pick up, [F] to turn off. Currently playing " + radio.songs[radio.songNum].name;
+						}
+						else
+						{
+							noticeText = "Hold [E] to pick up, [F] to change song. Currently playing " + radio.songs[radio.songNum].name;
+						}
+						if (Input.GetButtonDown("Interact"))
+						{
 							radio.ChangeSong();
-							AchievementManager.Instance.GetAchievement(11); // Groovy achievement
+							achievementManager.GetAchievement(11); // Groovy achievement
 						}
-					} else if(itemHandler.item.id == 35) { // Light
+					}
+					else if (itemHandler.item.id == 35)
+					{ // Light
 						LightItem li = itemHandler.GetComponent<LightItem>();
-						if(li.intensities[li.intensityNum] == 0) {
-							tooltipText = "Hold [E] to pick up, [F] to turn on";
-						} else if(li.intensityNum == li.intensities.Length - 1) {
-							tooltipText = "Hold [E] to pick up, [F] to turn off. Current brightness is " + li.intensities[li.intensityNum];
-						} else {
-							tooltipText = "Hold [E] to pick up, [F] to change brightness. Current brightness is " + li.intensities[li.intensityNum];
+						if (li.intensities[li.intensityNum] == 0)
+						{
+							noticeText = "Hold [E] to pick up, [F] to turn on";
 						}
-						if(Input.GetButtonDown("Interact")) {
+						else if (li.intensityNum == li.intensities.Length - 1)
+						{
+							noticeText = "Hold [E] to pick up, [F] to turn off. Current brightness is " + li.intensities[li.intensityNum];
+						}
+						else
+						{
+							noticeText = "Hold [E] to pick up, [F] to change brightness. Current brightness is " + li.intensities[li.intensityNum];
+						}
+						if (Input.GetButtonDown("Interact"))
+						{
 							li.IncreaseIntensity();
 						}
-					} else {
-						tooltipText = "Hold [E] to pick up";
+					} else if (itemHandler.item.type == Item.ItemType.Structure && itemHandler.item.subType == Item.ItemSubType.Furnace) //furnace
+                    {
+						noticeText = "Hold [E] to pick up, [F] to add fuel / ore";
+						if (interactKeyPressed)
+						{
+							Furnace furnace = itemHandler.GetComponent<Furnace>();
+							if (inventory.slots[inventory.selectedHotbarSlot].currentItem)
+							{
+								if (inventory.slots[inventory.selectedHotbarSlot].currentItem.fuel > 0 || inventory.slots[inventory.selectedHotbarSlot].currentItem.smeltItem)
+								{
+									inventory.TakeHeldItem(out Item thisItem, out int stackTaken, 1);
+									inventory.InventoryUpdate();
+									furnace.AddItem(thisItem, stackTaken);
+								}
+							}
+						}
 					}
-					if(Input.GetButton("PickUp")) {
-						if(!pickingUp || (pickingUp && !progressContainer.activeSelf)) {
-							progressContainer.SetActive(true);
+					else if (itemHandler.item.type == Item.ItemType.Structure && itemHandler.item.subType == Item.ItemSubType.Storage)
+					{
+						bool currentItemExists = false;
+						if (inventory.slots[inventory.selectedHotbarSlot].currentItem)
+						{
+							currentItemExists = true;
+						}
+						if (currentItemExists)
+                        {
+							noticeText = "Hold [E] to pick up, [F] to (try) add item";
+						} else
+                        {
+							noticeText = "Hold [E] to pick up, [F] to take item";
+						}
+						if (interactKeyPressed)
+						{
+							ItemHolder holder = itemHandler.GetComponent<ItemHolder>();
+							if (currentItemExists)
+							{
+								if (inventory.GetHeldItemStack() == 0)
+                                {
+									StopInteractKeyRepeat();
+                                }
+								inventory.TakeHeldItem(out Item thisItem, out int stackTaken, 1);
+								if (stackTaken > 0)
+								{
+									bool failed = false;
+									holder.AddItem(thisItem, 1, out failed);
+									if (failed)
+									{
+										inventory.AddItem(thisItem, 1);
+									}
+									else
+									{
+										
+									}
+								}
+								inventory.InventoryUpdate();
+							}
+							else
+							{
+								if (holder.GetItem())
+								{
+									inventory.AddItem(holder.GetItem(), 1);
+									holder.RemoveItem(1);
+									inventory.InventoryUpdate();
+								}
+							}
+						}
+					} else if (itemHandler.item.type == Item.ItemType.Structure && itemHandler.item.subType == Item.ItemSubType.Incinerator)
+                    {
+						noticeText = "Hold [E] to pick up, [F] to incinerate item";
+						if (interactKeyPressed)
+						{
+							Incinerator incinerator = itemHandler.GetComponent<Incinerator>();
+							if (incinerator)
+							{
+								inventory.TakeHeldItem(out Item thisItem, out int stackTaken, 1);
+								if (stackTaken > 0)
+								{
+									incinerator.IncinerateEffects();
+								}
+							}
+						}
+					}
+					else
+					{
+						noticeText = "Hold [E] to pick up";
+					}
+					if (Input.GetButton("PickUp"))
+					{
+						if (!pickingUp || (pickingUp && !progressUI.UIEnabled()))
+						{
+							progressUI.EnableUI();
 							pickingUp = true;
-						} else {
+						}
+						else
+						{
 							pickingUpTime += Time.deltaTime;
-							progressImage.fillAmount = pickingUpTime / itemHandler.item.timeToGather;
-							progressText.text = (itemHandler.item.timeToGather - pickingUpTime).ToString("0.0");
+							progressUI.UpdateProgress(pickingUpTime / itemHandler.item.timeToGather, (itemHandler.item.timeToGather - pickingUpTime));
 
-							if(pickingUpTime >= itemHandler.item.timeToGather) {
-								if(autoMiner) {
-									if(autoMiner.currentToolItem) {
+							if (pickingUpTime >= itemHandler.item.timeToGather)
+							{
+								if (autoMiner)
+								{
+									if (autoMiner.currentToolItem)
+									{
 										inventory.AddItem(autoMiner.GatherTool(), 1);
 									}
 									int q = 0;
-									foreach(Item item in autoMiner.items) {
+									foreach (Item item in autoMiner.items)
+									{
 										inventory.AddItem(item, autoMiner.itemAmounts[q]);
 										q++;
 									}
 								}
-								if(itemHandler.item.id == 6) { // Is it a furnace?
+								if (itemHandler.item.type == Item.ItemType.Structure && itemHandler.item.subType == Item.ItemSubType.Furnace)
+								{ // Is it a furnace?
 									Furnace furnace = itemHandler.GetComponent<Furnace>();
-									if(furnace) {
+									if (furnace)
+									{
 										inventory.AddItem(fuelItem, (int)Mathf.Floor(furnace.fuel)); // ONLY WORKS IF WOOD IS ONLY FUEL SOURCE
-										if(furnace.currentSmeltingItem) {
-											inventory.AddItem(furnace.currentSmeltingItem, 1);
+										if (furnace.currentSmeltingItem.Count > 0)
+										{
+											for (int i = 0; i < furnace.currentSmeltingItem.Count; i++) {
+												inventory.AddItem(furnace.currentSmeltingItem[i], 1);
+											}
 										}
 									}
 								}
+								if (itemHandler.item.type == Item.ItemType.Structure && itemHandler.item.subType == Item.ItemSubType.Storage)
+                                {
+									ItemHolder holder = itemHandler.GetComponent<ItemHolder>();
+									if (holder.GetItem())
+									{
+										inventory.AddItem(holder.GetItem(), holder.ItemStack());
+									}
+                                }
 								pickingUpTime = 0f;
-								progressImage.fillAmount = 0f;
+								progressUI.UpdateProgress(0, 0);
 								inventory.Pickup(itemHandler);
 								audioManager.Play("Grab");
 							}
 						}
-					} else if(pickingUp) {
-						hideTooltipText = true;
+					}
+					else if (pickingUp)
+					{
+						hideNoticeText = true;
 						pickingUpTime = 0f;
-						progressImage.fillAmount = 0f;
-						progressContainer.SetActive(false);
+						progressUI.UpdateProgress(0, 0);
+						progressUI.DisableUI();
 						pickingUp = false;
 					}
-				} else if(target.CompareTag("Resource") && distanceToTarget <= interactRange && !inventory.placingStructure) { // Gather resources
-					tooltipText = "Hold [LMB] to gather";
-					if(Input.GetMouseButton(0) || Input.GetAxisRaw("ControllerTriggers") <= -0.1f) {
-						hideTooltipText = true;
-						if(!gathering || (gathering && !progressContainer.activeSelf)) {
-							gathering = true;
-							progressContainer.SetActive(true);
-						} else {
-							float multiplier = 1f;
-							bool hasTool = false;
-							if(inventory.currentSelectedItem && inventory.currentSelectedItem.type == Item.ItemType.Tool) {
-								multiplier = inventory.currentSelectedItem.speed;
-								hasTool = true;
+				}
+				else if (target.CompareTag("Resource") && distanceToTarget <= interactRange && !inventory.placingStructure)
+				{ // Gather resources
+					ResourceHandler resHand = target.GetComponent<ResourceHandler>();
+					bool canMine = true;
+                    if (inventory.slots[inventory.selectedHotbarSlot].currentItem && inventory.slots[inventory.selectedHotbarSlot].currentItem.toolToughness >= resHand.resource.toughness || resHand.resource.toughness == 0)
+                    {
+                        if (resHand.enabled)
+                        {
+                            noticeText = "Hold [LMB] to gather";
+                            canMine = true;
+                        }
+                        else
+                        {
+                            noticeText = "Unable to gather";
+                            canMine = false;
+                        }
+                    }
+                    else
+                    {
+						noticeText = "Higher Tool Tier Needed";
+						canMine = false;
+					}
+					if (Input.GetMouseButton(0) || Input.GetAxisRaw("ControllerTriggers") <= -0.1f)
+					{
+						if (canMine)
+						{
+							hideNoticeText = true;
+							if (!gathering || (gathering && !progressUI.UIEnabled()))
+							{
+								gathering = true;
+								progressUI.EnableUI();
 							}
-							gatheringTime += Time.deltaTime;
-							if(currentResource == null || currentResource.gameObject != target) {
-								currentResource = target.GetComponent<ResourceHandler>();
-							}
-							progressImage.fillAmount = gatheringTime / (currentResource.resource.gatherTime / multiplier);
-							progressText.text = (currentResource.resource.gatherTime / multiplier - gatheringTime).ToString("0.0");
-							if(gatheringTime >= currentResource.resource.gatherTime / multiplier) {
-								int i = 0;
-								foreach(Item item in currentResource.resource.resourceItems) {
-									if(Random.Range(0f, 1f) <= currentResource.resource.chances[i]) {
-										inventory.AddItem(item, hasTool ? inventory.currentSelectedItem.gatherAmount : 1);
-									}
-									i++;
+							else
+							{
+								float multiplier = 1f;
+								if (inventory.currentSelectedItem && inventory.currentSelectedItem.type == Item.ItemType.Tool)
+								{
+									multiplier = inventory.currentSelectedItem.speed;
 								}
-								gatheringTime = 0f;
-								progressImage.fillAmount = 0f;
-								currentResource.Gather(hasTool ? inventory.currentSelectedItem.gatherAmount : 1); // CURRENTLY GATHERS GATHER AMOUNT EVEN IF RESOURCE HAS LESS THAN THAT AMOUNT LEFT
-								CameraShaker.Instance.ShakeOnce(2f, 3f, 0.1f, 0.3f);
+								gatheringTime += Time.deltaTime;
+								if (currentResource == null || currentResource.gameObject != target)
+								{
+									currentResource = target.GetComponent<ResourceHandler>();
+								}
+								progressUI.UpdateProgress(gatheringTime / (currentResource.resource.gatherTime / multiplier), currentResource.resource.gatherTime / multiplier - gatheringTime);
+								if (gatheringTime >= currentResource.resource.gatherTime / multiplier)
+								{
+									int gathered = currentResource.ToolGather(inventory.currentSelectedItem, out Item item);
+									inventory.AddItem(item, gathered);
+
+									gatheringTime = 0f;
+									progressUI.UpdateProgress(0, 0);
+									CameraShaker.Instance.ShakeOnce(2f, 3f, 0.1f, 0.3f);
+								}
+								else
+								{
+									noticeText = "Still Growing";
+								}
 							}
 						}
-					} else if(gathering || pickingUp) {
-						CancelGatherAndPickup();
-						hideTooltipText = true;
 					}
-				} else if(gathering || pickingUp) {
+					else if (gathering || pickingUp)
+					{
+						CancelGatherAndPickup();
+						hideNoticeText = true;
+					}
+				} else if (target.CompareTag("WorldButton") && distanceToTarget <= interactRange && !inventory.placingStructure)
+                {
+					WorldButton wb = target.GetComponent<WorldButton>();
+					noticeText = wb.DisplayText();
+					if (Input.GetButtonDown("Interact"))
+                    {
+						wb.Interact();
+                    }
+                }
+				else if (gathering || pickingUp)
+				{
 					CancelGatherAndPickup();
-					hideTooltipText = true;
-				} else {
-					hideTooltipText = true;
+					hideNoticeText = true;
 				}
-			} else {
-				if(gathering || pickingUp) {
+				else
+				{
+					hideNoticeText = true;
+				}
+			}
+			else
+			{
+				if (gathering || pickingUp)
+				{
 					CancelGatherAndPickup();
-					hideTooltipText = true;
+					hideNoticeText = true;
 				}
-				if(Input.GetMouseButtonDown(0) || Input.GetAxisRaw("ControllerTriggers") <= -0.1f) {
+				if (Input.GetMouseButtonDown(0) || Input.GetAxisRaw("ControllerTriggers") <= -0.1f)
+				{
 					Attack();
 				}
 				target = null;
-				hideTooltipText = true;
-				if(progressContainer.activeSelf) {
-					progressContainer.SetActive(false);
+				hideNoticeText = true;
+				if (progressUI.UIEnabled())
+				{
+					progressUI.DisableUI();
 				}
 			}
 		}
 
 		handAnimator.SetBool("Gathering", gathering);
 
-		if(hideTooltipText) {
-			if(!inventory.placingStructure) {
-				HideTooltipText();
+		if (hideNoticeText)
+		{
+			if (!inventory.placingStructure)
+			{
+				HideNoticeText();
 			}
-		} else {
-			ShowTooltipText(tooltipText);
-		} 
+		}
+		else
+		{
+			ShowNoticeText(noticeText);
+		}
 
-		if(transform.position.y < -100f) {
-			if(currentWorld == WorldManager.WorldType.Light) {
+		if (transform.position.y < -voidHeight)
+		{
+			if (currentWorld == WorldManager.WorldType.Light)
+			{
 				EnterDarkWorld();
-				AchievementManager.Instance.GetAchievement(10); // Achievement: Explorer
-			} else {
+				achievementManager.GetAchievement(10); // Achievement: Explorer
+			}
+			else
+			{
 				EnterLightWorld();
 			}
 		}
 
-		if(dead) {
+		if (dead)
+		{
 			purgatoryRespawnTimeText.text = (-(Time.time - nextTimeToRespawn)).ToString("0");
-			if(Time.time >= nextTimeToRespawn) {
+			if (Time.time >= nextTimeToRespawn)
+			{
 				Respawn();
 			}
 		}
-		CheckTooltips(hit);
-		CheckInteractions(hit);
 	}
 
-	void CheckTooltips (RaycastHit hit)
+	void ManageBuildingInteractKey () //NOTE: only use interactKeyPressed if you are dealing with lots of something.
     {
-		if (!hit.transform)
-			return;
-		if (hit.transform.gameObject == lastTooltipGameObject)
-			return;
-		lastTooltipGameObject = hit.transform.gameObject;
-
-		ITooltip tooltip = hit.transform.gameObject.GetComponent<ITooltip>();
-		if (tooltip != null)
+		interactKeyPressed = false;
+		if (Input.GetButtonDown("Interact"))
         {
-			ShowTooltipText(tooltip.GetTooltip());
+			interactKeyHeldTime = Time.time + interactKeyHeldDelay;
+			interactKeyPressed = true;
         }
-	}
 
-	void CheckInteractions (RaycastHit hit)
-    {
-		if (Input.GetKeyDown(KeyCode.E))
+		if (Time.time > interactKeyHeldTime)
 		{
-			if (!hit.transform)
-				return;
-			if (hit.transform.gameObject == lastInteractionGameObject)
-				return;
-			lastInteractionGameObject = hit.transform.gameObject;
-
-			ITooltip tooltip = hit.transform.gameObject.GetComponent<ITooltip>();
-			IInteractable interactable = hit.transform.gameObject.GetComponent<IInteractable>();
-			if (interactable != null)
-			{
-				interactable.Interact();
-			}
-			IItemInteractable itemInteractable = hit.transform.gameObject.GetComponent<IItemInteractable>();
-			if (itemInteractable != null)
-			{
-				itemInteractable.Interact(inventory.GetHeldItem());
-			}
-
+			if (Input.GetButton("Interact")) {
+				if (interactKeyPressed)//should half the "true" returns that interactKeyPressed should give
+				{
+					interactKeyPressed = false;
+				}
+				else
+				{
+					interactKeyPressed = true;
+				}
+			} else
+            {
+				interactKeyHeldTime = Time.time + 10000f;
+            }
 		}
     }
 
-	public void LoadCreativeMode() {
+	void StopInteractKeyRepeat () //mainly for preventing storage boxes from having some... weird behaviour
+    {
+		interactKeyHeldTime = Time.time + interactKeyHeldDelay;
+	}
+
+	public void LoadCreativeMode()
+	{
 		mode = 1;
 		hungerAmountImage.gameObject.SetActive(false);
 		healthAmountImage.gameObject.SetActive(false);
 	}
 
-	public void Consume(Item item) {
+	public void Consume(Item item) //or eat, comment is here for reference
+	{
 		//handAnimator.SetTrigger("Consume");
 		useParticles.Play();
-		GainCalories(item.calories);
+		if (lastEatenItem == item.id)
+		{
+			GainCalories(item.calories - item.boringFoodPenalty);
+		} else
+        {
+			GainCalories(item.calories);
+		}
+		lastEatenItem = item.id;
 	}
 
-	void SetInMenuState (bool _inMenu)
-    {
-		inMenu = _inMenu;
-    }
-
-	public bool InMenu() {
-		return inMenu;
+	public bool ActiveMenu()
+	{
+		return inventory.inventoryContainer.activeSelf || ActiveSystemMenu();
 	}
 
-	public bool ActiveSystemMenu() {
+	public bool ActiveSystemMenu()
+	{
 		return pauseManager.paused;
 	}
 
-	void Attack() {
-		if(handAnimator.GetCurrentAnimatorClipInfo(0)[0].clip.name != "PlayerAttack") { // IF PLAYERATTACK IS RENAMED, THIS WILL NOT WORK
+	void Attack()
+	{
+		if (handAnimator.GetCurrentAnimatorClipInfo(0)[0].clip.name != "PlayerAttack")
+		{ // IF PLAYERATTACK IS RENAMED, THIS WILL NOT WORK
 			handAnimator.SetTrigger("Attack");
-			if(target) {
+			if (target)
+			{
 				Health targetHealth = target.GetComponent<Health>();
-				if(targetHealth) {
-					if(inventory.currentSelectedItem) {
+				if (targetHealth)
+				{
+					if (inventory.currentSelectedItem)
+					{
 						WeaponHandler handler = inventory.currentSelectedItem.prefab.GetComponent<WeaponHandler>();
-						if(handler && handler.weapon.type == Weapon.WeaponType.Melee) {
+						if (handler && handler.weapon.type == Weapon.WeaponType.Melee)
+						{
 							targetHealth.TakeDamage(handler.weapon.damage);
 						}
-					} else {
+					}
+					else
+					{
 						targetHealth.TakeDamage(handDamage);
 					}
 				}
@@ -681,33 +960,45 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
-	void OnCollisionEnter(Collision col) {
-		if(col.relativeVelocity.magnitude >= impactVelocityToDamage && !dead && mode != 1) {
-			if(ignoreFallDamage) {
-				Invoke("ResetIgnoreFallDamage", 1f);
-			} else {
-				TakeDamage(col.relativeVelocity.magnitude * impactDamage);
-			}
-		}
+	void OnCollisionEnter(Collision col)
+	{
+		//WAS used for taking fall damage
 	}
 
-	void OnTriggerEnter(Collider other) {
-		if(other.CompareTag("Item")) {
+	void OnTriggerEnter(Collider other)
+	{
+		if (other.CompareTag("Item"))
+		{
 			ItemHandler itemHandler = other.GetComponentInParent<ItemHandler>();
-			if(itemHandler) {
-				if(itemHandler.item.id == 36) { // Ladder
+			if (itemHandler)
+			{
+				if (itemHandler.item.id == 36)
+				{ // Ladder
 					StartClimbing();
 				}
 			}
 		}
+		if (other.CompareTag("Damage Player"))
+        {
+			PlayerDamage damage = other.GetComponent<PlayerDamage>();
+			if (damage)
+            {
+				TakeDamage(damage.GetDamage());
+            }
+        }
 	}
 
-	void OnTriggerStay(Collider other) {
-		if(!climbing) {
-			if(other.CompareTag("Item")) {
+	void OnTriggerStay(Collider other)
+	{
+		if (!climbing)
+		{
+			if (other.CompareTag("Item"))
+			{
 				ItemHandler itemHandler = other.GetComponentInParent<ItemHandler>();
-				if(itemHandler) {
-					if(itemHandler.item.id == 36) { // Ladder
+				if (itemHandler)
+				{
+					if (itemHandler.item.id == 36)
+					{ // Ladder
 						StartClimbing();
 					}
 				}
@@ -715,92 +1006,149 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
-	void OnTriggerExit(Collider other) {
+	void OnTriggerExit(Collider other)
+	{
 		StopClimbing();
 	}
 
-	void StartClimbing() {
+	void StartClimbing()
+	{
 		climbing = true;
 		rb.useGravity = false;
 	}
 
-	void StopClimbing() {
+	void StopClimbing()
+	{
 		climbing = false;
-		if(!flying) {
+		if (!flying)
+		{
 			rb.useGravity = true;
 		}
 	}
 
-	void StartFlying() {
+	void StartFlying()
+	{
 		flying = true;
 		rb.velocity = Vector3.zero;
 		rb.useGravity = false;
 		rb.drag = flyingDrag;
 	}
 
-	void StopFlying() {
+	void StopFlying()
+	{
 		flying = false;
 		rb.drag = originalDrag;
-		if(!climbing) {
+		if (!climbing)
+		{
 			rb.useGravity = true;
 		}
 	}
 
-	void ResetIgnoreFallDamage() {
+	void ResetIgnoreFallDamage()
+	{
 		ignoreFallDamage = false;
 	}
 
-	void GainCalories(float amount) {
+	void GainCalories(float amount)
+	{
 		hunger += amount;
-		if(hunger > maxHunger) {
+		if (hunger > maxHunger)
+		{
 			hunger = maxHunger;
 		}
 		HungerChange();
 	}
 
-	void LoseCalories(float amount) {
+	void LoseCalories(float amount)
+	{
 		hunger -= amount;
 		HungerChange();
-		if(hunger < 0f) {
+		if (hunger < 0f)
+		{
 			hunger = 0f;
 		}
 	}
 
-	void GainHealth(float amount) {
+	void GainHealth(float amount)
+	{
 		health += amount;
-		if(health > maxHealth) {
+		if (health > maxHealth)
+		{
 			health = maxHealth;
 		}
 		HealthChange();
 	}
 
-	public void TakeDamage(float amount) {
+	public void TakeDamage(float amount)
+	{
+		if (mode != 1)
+		{
+			health -= amount;
+			CameraShaker.Instance.ShakeOnce(4f, 5f, 0.1f, 0.5f);
+			damagePanelAnim.Play();
+			if (health <= 0 && !dead)
+			{
+				Die();
+			}
+			else if (health < 0f)
+			{
+				health = 0f;
+			}
+			HealthChange();
+		}
+	}
+
+	public void TakeFallDamage (float amount)
+    {
+		TakeDamage(amount);
+    }
+
+	public void TakeFallDamage(GameObject source)
+    {
+		NegateFallDamage nfd = source.GetComponent<NegateFallDamage>();
+		if (nfd && !nfd.NegateDamage() || !nfd)
+		{
+			if (-smoothedYVelocity >= fallVelocityToDamage && !dead && mode != 1)
+			{
+				if (ignoreFallDamage)
+				{
+					Invoke("ResetIgnoreFallDamage", 1f);
+				}
+				else
+				{
+					if (nfd)
+					{
+						TakeDamage(Mathf.Pow(-smoothedYVelocity * fallDamage * nfd.GetFallDamageMult(), 1.39f));
+					} else
+                    {
+						TakeDamage(Mathf.Pow(-smoothedYVelocity * fallDamage, 1.39f));
+					}
+				}
+			}
+		}
+	}
+
+	public void TakeEffectDamage(float amount)
+	{
 		health -= amount;
-		CameraShaker.Instance.ShakeOnce(4f, 5f, 0.1f, 0.5f);
-		damagePanelAnim.Play();
-		if(health <= 0 && !dead) {
+		if (health <= 0 && !dead)
+		{
 			Die();
-		} else if(health < 0f) {
+		}
+		else if (health < 0f)
+		{
 			health = 0f;
 		}
 		HealthChange();
 	}
 
-	public void TakeEffectDamage(float amount) {
-		health -= amount;
-		if(health <= 0 && !dead) {
-			Die();
-		} else if(health < 0f) {
-			health = 0f;
-		}
-		HealthChange();
-	}
-
-	void HungerChange() {
+	void HungerChange()
+	{
 		hungerAmountImage.fillAmount = hunger / maxHunger;
 	}
 
-	void HealthChange() {
+	void HealthChange()
+	{
 		healthAmountImage.fillAmount = health / maxHealth;
 	}
 
@@ -819,42 +1167,61 @@ public class PlayerController : MonoBehaviour {
 	}
 	*/
 
-	void CancelGatherAndPickup() {
+	void CancelGatherAndPickup()
+	{
 		gatheringTime = 0f;
 		pickingUpTime = 0f;
-		progressImage.fillAmount = 0f;
-		progressContainer.SetActive(false);
+		progressUI.UpdateProgress(0, 0);
+		progressUI.DisableUI();
 		gathering = false;
 		pickingUp = false;
 	}
 
-	void EnterLightWorld() {
+	public void StopGathering ()
+    {
+		gatheringTime = 0f;
+		progressUI.UpdateProgress(0, 0);
+		progressUI.DisableUI();
+		gathering = false;
+	}
+
+	void EnterLightWorld()
+	{
 
 		LoadLightWorld();
 
 		transform.position = lightWorldEnterPoint.position;
+		rb.velocity = lightWorldEnterVelocity;
 
-		ignoreFallDamage = true;
-		realmtooltipText.color = lightRealmtooltipTextColor;
-		realmtooltipText.text = "ENTERING LIGHT REALM";
-		canvasAnim.SetTrigger("RealmtooltipTextEnter");
-		Invoke("HideRealmtooltipText", 3);
+		IgnoreNextFall();
+		realmNoticeText.color = lightRealmNoticeTextColor;
+		realmNoticeText.text = "ENTERING LIGHT REALM";
+		canvasAnim.SetTrigger("RealmNoticeTextEnter");
+		Invoke("HideRealmNoticeText", 3);
 	}
 
-	void EnterDarkWorld() {
+	void EnterDarkWorld()
+	{
 
 		LoadDarkWorld();
 
 		transform.position = darkWorldEnterPoint.position;
+		rb.velocity = darkWorldEnterVelocity;
 
-		ignoreFallDamage = true;
-		realmtooltipText.color = darkRealmtooltipTextColor;
-		realmtooltipText.text = "ENTERING DARK REALM";
-		canvasAnim.SetTrigger("RealmtooltipTextEnter");
-		Invoke("HideRealmtooltipText", 3);
+		IgnoreNextFall();
+		realmNoticeText.color = darkRealmNoticeTextColor;
+		realmNoticeText.text = "ENTERING DARK REALM";
+		canvasAnim.SetTrigger("RealmNoticeTextEnter");
+		Invoke("HideRealmNoticeText", 3);
 	}
 
-	public void LoadLightWorld() {
+	public void IgnoreNextFall ()
+    {
+		ignoreFallDamage = true;
+	}
+
+	public void LoadLightWorld()
+	{
 		currentWorld = WorldManager.WorldType.Light;
 		RenderSettings.fogColor = defaultFogColor;
 		RenderSettings.fogDensity = defaultFogDensity;
@@ -865,7 +1232,8 @@ public class PlayerController : MonoBehaviour {
 		rain.SetActive(false);
 	}
 
-	public void LoadDarkWorld() {
+	public void LoadDarkWorld()
+	{
 		currentWorld = WorldManager.WorldType.Dark;
 		RenderSettings.fogColor = Color.black;
 		RenderSettings.fogDensity = 0.04f;
@@ -876,16 +1244,20 @@ public class PlayerController : MonoBehaviour {
 		rain.SetActive(true);
 	}
 
-	void HideRealmtooltipText() {
-		//canvasAnim.SetTrigger("RealmtooltipTextExit");
+	void HideRealmNoticeText()
+	{
+		canvasAnim.SetTrigger("RealmNoticeTextExit");
 	}
 
-	public void Die() {
-		if(difficulty > 1) {
+	public void Die()
+	{
+		if (difficulty > 1)
+		{
 			inventory.ClearInventory();
 		}
-		if(inventory.placingStructure) {
-			inventory.StopBuilding();
+		if (inventory.placingStructure)
+		{
+			inventory.CancelStructurePlacement();
 		}
 		playerCameraPostProcessingBehaviour.profile = darkPostProcessingProfile;
 		transform.position = purgatorySpawn.position;
@@ -896,55 +1268,90 @@ public class PlayerController : MonoBehaviour {
 		dead = true;
 	}
 
-	void Respawn() {
+	void Respawn()
+	{
 		health = maxHealth;
 		hunger = maxHunger;
 		dead = false;
-		if(currentWorld == WorldManager.WorldType.Light) {
+		if (currentWorld == WorldManager.WorldType.Light)
+		{
 			EnterLightWorld();
-		} else {
+		}
+		else
+		{
 			EnterDarkWorld();
 		}
 	}
 
-	public void ShowTooltipText(string text) {
-		if(!tooltipText.gameObject.activeSelf) {
-			tooltipText.gameObject.SetActive(true);
+	public void ShowNoticeText(string text)
+	{
+		if (!noticeText.gameObject.activeSelf)
+		{
+			noticeText.gameObject.SetActive(true);
 		}
-		tooltipText.text = text;
+		noticeText.text = text;
 	}
 
-	public void HideTooltipText() {
-		if(tooltipText.gameObject.activeSelf) {
-			tooltipText.text = "";
-			tooltipText.gameObject.SetActive(false);
+	public void HideNoticeText()
+	{
+		if (noticeText.gameObject.activeSelf)
+		{
+			noticeText.text = "";
+			noticeText.gameObject.SetActive(false);
 		}
 	}
 
-	public void LockLook(bool _lockLook) {
+	public void LockLook(bool _lockLook)
+	{
 		lockLook = _lockLook;
 	}
 
-	void FixedUpdate() {
-		if(climbing) {
-			Collider[] cols = Physics.OverlapCapsule(transform.position - Vector3.up * 0.5f, transform.position + Vector3.up * 0.5f, 0.5f);
-			if(cols.Length - 2 < 1) { // Doesn't seem to be a ladder near (Prevents flying). We do the -2 because the player and groundCheck collide with it.
-				StopClimbing();
-			}
+	void FixedUpdate()
+	{
+		if (grounded && !flying && jumpReady) //jump logic
+		{
+			rb.AddForce(transform.up * jumpForce, ForceMode.VelocityChange);
+			rb.AddForce(transform.TransformDirection(moveAmount) * jumpInertia * 10f, ForceMode.Impulse); //to transfer movement speed into the jump; what gives the player a sort of "momentum"
 		}
 
-		if(grounded) {
+		if (grounded)
+		{
 			Collider[] cols = Physics.OverlapBox(transform.position - Vector3.up * 0.5f, 0.5f * Vector3.one);
-			if(cols.Length - 2 < 1) { // Doesn't seem to be ground near (Prevents flying). We do the -2 because the player and groundCheck collide with it.
+			if (cols.Length - 2 < 1)
+			{ // Doesn't seem to be ground near (Prevents flying). We do the -2 because the player and groundCheck collide with it.
 				grounded = false;
 			}
 		}
 
-		if(climbing) {
+		if (climbing)
+		{
+			Collider[] cols = Physics.OverlapCapsule(transform.position - Vector3.up * 0.5f, transform.position + Vector3.up * 0.5f, 0.5f);
+			if (cols.Length - 2 < 1)
+			{ // Doesn't seem to be a ladder near (Prevents flying). We do the -2 because the player and groundCheck collide with it.
+				StopClimbing();
+			}
+
 			rb.MovePosition(rb.position + (transform.TransformDirection(Vector3.right * moveAmount.x + Vector3.up * moveAmount.y + (Vector3.forward * (moveAmount.z > 1 ? moveAmount.z : 0))) + Vector3.up * moveAmount.z) * Time.fixedDeltaTime);
 			rb.velocity = Vector3.zero;
-		} else {
-			rb.MovePosition(rb.position + (transform.TransformDirection(moveAmount) * Time.fixedDeltaTime));
 		}
+		else if (grounded || flying) //Normal movement on the ground or flying
+		{
+			rb.MovePosition(rb.position + (transform.TransformDirection(moveAmount) * Time.fixedDeltaTime));
+		} else //movement in the air
+        {
+			rb.MovePosition(rb.position + (transform.TransformDirection(moveAmount) * Time.fixedDeltaTime * airMult));
+		}
+		smoothedYVelocity = (smoothedYVelocity + rb.velocity.y) / 2;
+		jumpReady = false; //this is put here so jumps can't be "queued"
 	}
+
+	public void SetLastEatenItem (int id)
+    {
+		lastEatenItem = id;
+    }
+
+	public int GetLastEatenItem ()
+    {
+		return lastEatenItem;
+    }
 }

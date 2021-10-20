@@ -9,13 +9,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4490416568207124}
-  - component: {fileID: 114372660805521716}
   - component: {fileID: 33580952533375844}
   - component: {fileID: 23504295750039766}
   - component: {fileID: 95462407181888122}
   - component: {fileID: 54553412269748296}
+  - component: {fileID: 114372660805521716}
   - component: {fileID: 135564350422515014}
-  m_Layer: 6
+  - component: {fileID: 2140063573573355823}
+  m_Layer: 0
   m_Name: Apple
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -36,21 +37,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &114372660805521716
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1219581920616964}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e4b5061345d984446a05c9ab240db0da, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  item: {fileID: 11400000, guid: d26b5cace6986ec49876269562501d8e, type: 2}
-  saveID: 12
-  dontSave: 0
 --- !u!33 &33580952533375844
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -70,12 +56,9 @@ MeshRenderer:
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -102,7 +85,6 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!95 &95462407181888122
 Animator:
   serializedVersion: 3
@@ -131,13 +113,26 @@ Rigidbody:
   m_GameObject: {fileID: 1219581920616964}
   serializedVersion: 2
   m_Mass: 1
-  m_Drag: 0.5
+  m_Drag: 0.2
   m_AngularDrag: 1
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 1
+--- !u!114 &114372660805521716
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1219581920616964}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4b5061345d984446a05c9ab240db0da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  item: {fileID: 11400000, guid: d26b5cace6986ec49876269562501d8e, type: 2}
 --- !u!135 &135564350422515014
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -151,3 +146,18 @@ SphereCollider:
   serializedVersion: 2
   m_Radius: 0.25
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &2140063573573355823
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1219581920616964}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3623a4d36f4bc2147a08d37c2f8ad768, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attachedToTree: 0
+  treeBase: {x: 0, y: 0, z: 0}
+  treeObj: {fileID: 0}

@@ -2,31 +2,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SmallIsland : MonoBehaviour, IItemSaveable {
+public class SmallIsland : MonoBehaviour {
 
-	public int saveID;
-
+	public enum IslandType {Light, Dark};
+	public IslandType islandType;
 	public Vector3 moveAmount;
+	public int requiredObjects; //amount of objects required for this to move
+	private float fakeGravity;
 
-	float speed = 0.5f;
-	[SerializeField] float minSpeed, maxSpeed;
-	bool loaded;
+	public float speed = 0.5f;
+	
+	void Update () {
+		transform.position += moveAmount * Time.deltaTime * speed;
+	}
 
-	void Start ()
+    void FixedUpdate()
     {
-		if (!loaded)
-        {
-			speed = Random.Range(minSpeed, maxSpeed);
-        }
-		if (speed == 0)
-        {
-			Destroy(gameObject);
-        }
-    }
-
-	void FixedUpdate ()
-    {
-		transform.position += moveAmount * Time.fixedDeltaTime * speed;
 		if (transform.localPosition.z >= 200f)
 		{
 			if (transform.childCount > 0)
@@ -43,27 +34,21 @@ public class SmallIsland : MonoBehaviour, IItemSaveable {
 			}
 			Destroy(gameObject);
 		}
-	}
-
-	public void GetData(out ItemSaveData data, out ObjectSaveData objData, out bool dontSave)
-	{
-		ItemSaveData newData = new ItemSaveData();
-		ObjectSaveData newObjData = new ObjectSaveData(transform.position, transform.rotation, saveID);
-
-		newData.floatVal = speed;
-
-		data = newData;
-		objData = newObjData;
-		dontSave = false;
-	}
-
-	public void SetData(ItemSaveData data, ObjectSaveData objData)
-	{
-		transform.position = objData.position;
-		transform.rotation = objData.rotation;
-
-		speed = data.floatVal;
-
-		loaded = true;
-	}
+		if (transform.childCount < requiredObjects)
+        {
+			fakeGravity += 0.001f;
+			transform.position += Vector3.down * fakeGravity;
+        } else
+        {
+			fakeGravity = fakeGravity / 1.05f;
+			if (fakeGravity <= 0.005)
+            {
+				fakeGravity = 0;
+            }
+        }
+		if (transform.position.y <= -500f)
+        {
+			Destroy(gameObject);
+        }
+    }
 }

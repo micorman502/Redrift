@@ -13,19 +13,22 @@ MonoBehaviour:
   m_Name: Crate
   m_EditorClassIdentifier: 
   itemName: Crate
-  itemDescription: Open to get random loot.
+  itemDescription: Open to get random loot
   type: 0
+  subType: 0
   id: 12
   icon: {fileID: 21300000, guid: d0e956ce47e9f76448d1c0e53de649a3, type: 3}
   prefab: {fileID: 1365681976019388, guid: cf1f381ba78194c41af8d56c4e4fbbcf, type: 3}
   timeToGather: 0.25
   handRotation: {x: 0, y: 0, z: 0}
   handScale: {x: 0.25, y: 0.25, z: 0.25}
-  maxStackCount: 1
+  handPrefab: {fileID: 0}
+  maxStackCount: 5
   previewPrefab: {fileID: 1803993696199110, guid: 61ba93cda145aa749ad4b76758c829d5,
     type: 3}
   speed: 0
   gatherAmount: 0
+  toolToughness: 0
   power: 0
   fuel: 0
   smeltItem: {fileID: 0}

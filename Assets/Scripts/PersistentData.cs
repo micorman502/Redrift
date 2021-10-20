@@ -8,6 +8,7 @@ public class PersistentData : MonoBehaviour {
 	public int saveToLoad;
 	public int difficulty;
 	public int mode;
+	public string gameModifier;
 	public string newSaveName;
 
 	void Awake() {

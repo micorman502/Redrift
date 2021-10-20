@@ -25,28 +25,8 @@ public class Bucket : MonoBehaviour {
 		}
 	}
 
+
 	void Update() {
-		if(worldType == WorldManager.WorldType.Dark) {
-			fillTime += Time.deltaTime * Mathf.Max(0f, transform.up.y);
-		}
-		if(transform.up.y <= 0.6f) {
-			fillTime += Time.deltaTime + Mathf.Min(0f, (transform.up.y - 0.65f) / 2f);
-		}
-		waterLevel.transform.localPosition = Vector3.Lerp(Vector3.up * -0.49f, Vector3.zero, fillTime / timeToFill);
-		waterLevel.transform.localScale = Vector3.Lerp(Vector3.one * 0.82f, Vector3.one, fillTime / timeToFill);
-		if(fillTime <= 0f) {
-			if(waterBucket) {
-				EmptyWater();
-			} else {
-				fillTime = 0f;
-			}
-		} else if(fillTime >= timeToFill) {
-			if(waterBucket) {
-				fillTime = timeToFill;
-			} else {
-				FillWithWater();
-			}
-		}
 
 		/*
 		if(waterBucket) {
@@ -78,23 +58,65 @@ public class Bucket : MonoBehaviour {
 		}
 		*/
 
-		if(fillTime <= 0f) {
-			if(waterLevel.gameObject.activeSelf) {
+	}
+
+    void FixedUpdate()
+    {
+		if (worldType == WorldManager.WorldType.Dark)
+		{
+			fillTime += 0.02f * Mathf.Max(0f, transform.up.y);
+		}
+		if (transform.up.y <= 0.6f)
+		{
+			fillTime += 0.02f + Mathf.Min(0f, (transform.up.y - 0.65f) / 2f);
+		}
+		waterLevel.transform.localPosition = Vector3.Lerp(Vector3.up * -0.49f, Vector3.zero, fillTime / timeToFill);
+		waterLevel.transform.localScale = Vector3.Lerp(Vector3.one * 0.82f, Vector3.one, fillTime / timeToFill);
+		if (fillTime <= 0f)
+		{
+			if (waterBucket)
+			{
+				EmptyWater();
+			}
+			else
+			{
+				fillTime = 0f;
+			}
+		}
+		else if (fillTime >= timeToFill)
+		{
+			if (waterBucket)
+			{
+				fillTime = timeToFill;
+			}
+			else
+			{
+				FillWithWater();
+			}
+		}
+		if (fillTime <= 0f)
+		{
+			if (waterLevel.gameObject.activeSelf)
+			{
 				waterLevel.gameObject.SetActive(false);
 			}
-		} else {
-			if(!waterLevel.gameObject.activeSelf) {
+		}
+		else
+		{
+			if (!waterLevel.gameObject.activeSelf)
+			{
 				waterLevel.gameObject.SetActive(true);
 			}
 		}
 
-		if(Time.time >= nextTimeToWorldCheck) {
+		if (Time.time >= nextTimeToWorldCheck)
+		{
 			CheckWorldType();
 			nextTimeToWorldCheck = Time.time + worldCheckInterval;
 		}
 	}
 
-	void CheckWorldType() {
+    void CheckWorldType() {
 		if(transform.position.x < 5000f) {
 			worldType = WorldManager.WorldType.Light;
 		} else {

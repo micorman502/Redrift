@@ -15,22 +15,25 @@ MonoBehaviour:
   itemName: Conveyor Belt
   itemDescription: Allows for easy transport of items
   type: 2
+  subType: 2
   id: 25
   icon: {fileID: 21300000, guid: 72555b50ad8ec32419e3f5a156cf8943, type: 3}
   prefab: {fileID: 1070651816951194, guid: 2adc991730722e34184fbd8d6aa78f40, type: 3}
   timeToGather: 1
   handRotation: {x: 0, y: 0, z: 0}
   handScale: {x: 0.25, y: 0.25, z: 0.25}
+  handPrefab: {fileID: 0}
   maxStackCount: 20
   previewPrefab: {fileID: 1613053436950400, guid: a4ff52b46054d2d46813f88e787392d7,
     type: 3}
   speed: 0
   gatherAmount: 0
+  toolToughness: 0
   power: 0
   fuel: 0
   smeltItem: {fileID: 0}
   alignToNormal: 0
-  gridSize: {x: 0.5, y: 0.5, z: 0.5}
+  gridSize: {x: 0.25, y: 0.25, z: 0.25}
   rots:
   - {x: 0, y: 0, z: 0}
   - {x: 0, y: 90, z: 0}

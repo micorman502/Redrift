@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: IronOre
   m_EditorClassIdentifier: 
   prefab: {fileID: 1078551866452224, guid: ffaf4c1f892bb4a49b183f3d4721e106, type: 3}
+  type: 3
   id: 2
   resourceItems:
   - {fileID: 11400000, guid: 7594da2b096925a46a5c6e4fa578ae85, type: 2}
   chances:
   - 1
   maxGathers: 8
-  gatherTime: 12
+  gatherTime: 11
+  toughness: 1
   infiniteGathers: 0

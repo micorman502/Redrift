@@ -130,7 +130,7 @@ Rigidbody:
   m_GameObject: {fileID: 1472234370411092}
   serializedVersion: 2
   m_Mass: 1.5
-  m_Drag: 0.5
+  m_Drag: 0.2
   m_AngularDrag: 1
   m_UseGravity: 1
   m_IsKinematic: 0
@@ -161,5 +161,5 @@ SphereCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.223606
-  m_Center: {x: 0, y: -0.012339006, z: 0.045462508}
+  m_Radius: 0.20813324
+  m_Center: {x: 0, y: -0.012339011, z: 0.0031975806}

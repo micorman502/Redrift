@@ -4,7 +4,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 public class MenuSaveManager : MonoBehaviour {
 
@@ -20,8 +19,10 @@ public class MenuSaveManager : MonoBehaviour {
 	[SerializeField] InputField saveNameInputField;
 	[SerializeField] Dropdown saveDifficultyDropdown;
 	[SerializeField] Dropdown saveModeDropdown;
+	[SerializeField] Dropdown saveModifierDropdown;
 	[SerializeField] Text difficultyBlurb;
 	[SerializeField] Text modeBlurb;
+	[SerializeField] Text modifierBlurb;
 	[SerializeField] Text saveErrorText;
 
 	SaveManager saveManager;
@@ -38,6 +39,8 @@ public class MenuSaveManager : MonoBehaviour {
 
 	string[] modeBlurbs = {"Survival: Survive on the island.",
 		"Creative: Health and hunger disabled, with an infinite supply of all items and the ability to fly."};
+	string[] modifierBlurbs = {"Default: Normal Adrift Gameplay.",
+		"Apocalypse: It is too late. Meteoroids are bombarding the planet, and destroying all they can."};
 
 	void Awake() {
 		menuManager = FindObjectOfType<MenuManager>();
@@ -53,19 +56,27 @@ public class MenuSaveManager : MonoBehaviour {
 		RenderList();
 		OnChangeDifficulty();
 		OnChangeMode();
+		OnChangeModifier();
 	}
 
 	void RenderList() {
+		CreateNewSaveButton(); //Opposed to Adrift, this is at the top. The new save button should be at the top, otherwise lots of scrolling ensues.
 		saveNameInputField.text = "World " + (info.Length + 1);
 		for(int i = 0; i < info.Length; i++) {
+			BinaryFormatter bf = new BinaryFormatter();
+			FileStream file = File.Open(Application.persistentDataPath + "/saves/" + info[i].Name, FileMode.Open);
+			Save save = (Save)bf.Deserialize(file);
+			file.Close(); //yeah, opening a save for each list item isn't the best, but i don't know what else to do.
+
 			int saveNum = i;
 			GameObject go = Instantiate(saveListItem, saveList.transform);
 			saveListItems.Add(go);
-			SaveListItem item = go.GetComponent<SaveListItem>();
 			string[] infoSplit = info[saveNum].Name.Split('.');
-			item.Setup(infoSplit[infoSplit.Length - 2]);
-			item.GetLoadSaveButton().onClick.AddListener(delegate { LoadSave(saveNum); });
-			item.GetConfirmDeleteButton().onClick.AddListener(delegate { DeleteSave(saveNum); });
+			go.GetComponentInChildren<Text>().text = infoSplit[infoSplit.Length - 2];
+			go.GetComponentsInChildren<Text>()[1].text = save.version;
+			go.GetComponent<Button>().onClick.AddListener(delegate { LoadSave(saveNum); });
+			Button confirmDeleteButton = go.transform.Find("ConfirmDeleteButton").GetComponent<Button>();
+			confirmDeleteButton.onClick.AddListener(delegate { DeleteSave(saveNum); });
 		}
 	}
 
@@ -76,6 +87,19 @@ public class MenuSaveManager : MonoBehaviour {
 		DirectoryInfo dir = new DirectoryInfo(Application.persistentDataPath + "/saves");
 		info = dir.GetFiles("*.*");
 		saveListItems.Clear();
+	}
+
+	void CreateNewSaveButton() {
+		GameObject go = Instantiate(saveListItem, saveList.transform);
+		saveListItems.Add(go);
+		go.GetComponentInChildren<Text>().text = "New Save";
+		go.GetComponent<Button>().onClick.AddListener(delegate { OpenNewSaveMenu(); });
+		go.GetComponent<Image>().color = new Color(0, 0, 0, 0);
+		go.GetComponentInChildren<Text>().color = Color.green;
+		Destroy(go.transform.Find("DeleteButton").gameObject);
+		RectTransform rt = go.transform.Find("SaveText").GetComponent<RectTransform>();
+		rt.offsetMin = Vector2.zero;
+		rt.offsetMax = Vector2.zero;
 	}
 
 	public void LoadSave(int saveNum) {
@@ -116,6 +140,11 @@ public class MenuSaveManager : MonoBehaviour {
 		modeBlurb.text = modeBlurbs[saveModeDropdown.value];
 	}
 
+	public void OnChangeModifier()
+    {
+		modifierBlurb.text = modifierBlurbs[saveModifierDropdown.value];
+    }
+
 	public void CreateNewSave() {
 		if(string.IsNullOrEmpty(saveNameInputField.text)) {
 			saveErrorText.text = "Please enter a valid name.";
@@ -134,8 +163,26 @@ public class MenuSaveManager : MonoBehaviour {
 		persistentData.newSaveName = saveNameInputField.text;
 		persistentData.difficulty = saveDifficultyDropdown.value;
 		persistentData.mode = saveModeDropdown.value;
+		persistentData.gameModifier = GetModifier(saveModifierDropdown.value);
 		persistentData.loadSave = false;
 		persistentData.saveToLoad = info.Length;
 		menuManager.LoadScene("World");
 	}
+
+	public string GetModifier (int modifierIn)
+    {
+		//temporary... until more are added
+		if (modifierIn == 0)
+		{
+			return null;
+		}
+		else if (modifierIn == 1)
+		{
+			return "apocalypse";
+		}
+		else
+		{
+			return null;
+		}
+    }
 }

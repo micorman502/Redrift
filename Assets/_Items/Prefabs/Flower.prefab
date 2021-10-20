@@ -9,11 +9,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4299214147621458}
-  - component: {fileID: 114809852079498998}
   - component: {fileID: 33449429480246040}
   - component: {fileID: 23156349712958932}
   - component: {fileID: 95168886304701102}
-  - component: {fileID: 65658921273651146}
+  - component: {fileID: 114809852079498998}
+  - component: {fileID: 6294637517782503544}
   m_Layer: 0
   m_Name: Flower
   m_TagString: Item
@@ -35,21 +35,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &114809852079498998
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1916474053067786}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e4b5061345d984446a05c9ab240db0da, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  item: {fileID: 11400000, guid: 227d16e862069b547a5cec8be9f69c77, type: 2}
-  saveID: 24
-  dontSave: 0
 --- !u!33 &33449429480246040
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -69,12 +54,9 @@ MeshRenderer:
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -100,7 +82,6 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!95 &95168886304701102
 Animator:
   serializedVersion: 3
@@ -120,7 +101,20 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
---- !u!65 &65658921273651146
+--- !u!114 &114809852079498998
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1916474053067786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4b5061345d984446a05c9ab240db0da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  item: {fileID: 11400000, guid: 227d16e862069b547a5cec8be9f69c77, type: 2}
+--- !u!65 &6294637517782503544
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -131,5 +125,5 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.18232, y: 0.29469505, z: 0.8524672}
-  m_Center: {x: -0.012621, y: -0.056943517, z: 0.34533858}
+  m_Size: {x: 0.18232039, y: 0.294696, z: 0.692842}
+  m_Center: {x: -0.012620881, y: -0.056943506, z: 0.2655259}

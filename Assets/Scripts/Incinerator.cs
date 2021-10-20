@@ -2,41 +2,44 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Incinerator : MonoBehaviour, IGetTriggerInfo {
+public class Incinerator : MonoBehaviour {
 
 	[SerializeField] TellParent tellParent;
 
 	[SerializeField] ParticleSystem smokeParticles;
 	[SerializeField] ParticleSystem fireParticles;
 
+	AchievementManager achievementManager;
 
-	public void GetTriggerInfo (Collider col)
-    {
-		DestroyObject(col);
+	void Start() {
+		achievementManager = FindObjectOfType<AchievementManager>();
 	}
 
-	public void GetTriggerInfoRepeating (Collider col)
-    {
-		DestroyObject(col);
-	}
-
-	void DestroyObject (Collider col)
-    {
-		if (col.CompareTag("Item"))
-		{
-			DestroyObject(col.gameObject);
+	void Update() {
+		if(tellParent.currentColliders.Count > 0) {
+			foreach(Collider col in tellParent.currentColliders) {
+				if(col && col.CompareTag("Item")) {
+					ItemHandler itemHandler = col.GetComponent<ItemHandler>();
+					if(itemHandler) {
+						IncinerateObject(itemHandler.gameObject);
+					}
+				}
+			}
 		}
 	}
 
-	void DestroyObject (GameObject obj)
+	public void IncinerateObject (GameObject incin)
     {
-		ItemHandler itemHandler = obj.GetComponent<ItemHandler>();
-		if (itemHandler)
-		{
-			Destroy(itemHandler.gameObject);
-			smokeParticles.Play();
-			fireParticles.Play();
-			AchievementManager.Instance.GetAchievement(12); // Destruction achievement
-		}
+		Destroy(incin.gameObject);
+		smokeParticles.Play();
+		fireParticles.Play();
+		achievementManager.GetAchievement(12); // Destruction achievement
+	}
+
+	public void IncinerateEffects ()
+    {
+		smokeParticles.Play();
+		fireParticles.Play();
+		achievementManager.GetAchievement(12); // Destruction achievement
 	}
 }

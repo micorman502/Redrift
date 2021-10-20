@@ -15,16 +15,19 @@ MonoBehaviour:
   itemName: Stone Pickaxe
   itemDescription: 
   type: 1
+  subType: 0
   id: 2
   icon: {fileID: 21300000, guid: 0f51bee8c32fb6c468cb8b5b6e4914f7, type: 3}
   prefab: {fileID: 1786563341914446, guid: 5f34a8483f909ca45b40146cb394fb68, type: 3}
   timeToGather: 0.1
   handRotation: {x: 119.737, y: 7.760986, z: 82.239}
   handScale: {x: 1, y: 1, z: 1}
+  handPrefab: {fileID: 0}
   maxStackCount: 1
   previewPrefab: {fileID: 0}
   speed: 2
   gatherAmount: 1
+  toolToughness: 2
   power: 0
   fuel: 0
   smeltItem: {fileID: 0}

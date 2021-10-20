@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91adea7c2cf48c44bab70182c5512d9d, type: 3}
+  m_Name: Elevator
+  m_EditorClassIdentifier: 
+  itemName: Elevator
+  itemDescription: Moves you up and down. Needs elevator blocks.
+  type: 2
+  subType: 0
+  id: 40
+  icon: {fileID: 21300000, guid: 64d8fb3add5cb334ea22df71fcde55fd, type: 3}
+  prefab: {fileID: 1648633314728975999, guid: 63a52b05dbff6284a99569af2d90b1d5, type: 3}
+  timeToGather: 0.25
+  handRotation: {x: 0, y: 0, z: 0}
+  handScale: {x: 0.25, y: 0.25, z: 0.25}
+  handPrefab: {fileID: 0}
+  maxStackCount: 1
+  previewPrefab: {fileID: 3530131841534572272, guid: f5bd0e17d064149469cf4be8a80a9be7,
+    type: 3}
+  speed: 0
+  gatherAmount: 0
+  toolToughness: 0
+  power: 0
+  fuel: 0
+  smeltItem: {fileID: 0}
+  alignToNormal: 0
+  gridSize: {x: 1, y: 1, z: 1}
+  rots:
+  - {x: -90, y: 0, z: 0}
+  - {x: -90, y: 0, z: 90}
+  - {x: -90, y: 0, z: 180}
+  - {x: -90, y: 0, z: 270}
+  achievementNumber: -1
+  calories: 0

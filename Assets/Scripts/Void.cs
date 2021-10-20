@@ -13,7 +13,7 @@ public class Void : MonoBehaviour {
 	}
 
 	void OnTriggerEnter(Collider other) {
-		if(other.CompareTag("Player")) {
+		if(other.CompareTag("Player") || other.GetComponent<SmallIsland>() || other.GetComponent<Meteorite>()) {
 			return;
 		}
 		other.transform.position = worldSpawn.position;
@@ -25,7 +25,7 @@ public class Void : MonoBehaviour {
 	}
 
 	void OnTriggerStay(Collider other) {
-		if(other.CompareTag("Player")) {
+		if(other.CompareTag("Player") || other.GetComponent<SmallIsland>() || other.GetComponent<Meteorite>()) {
 			return;
 		}
 		other.transform.position = worldSpawn.position;

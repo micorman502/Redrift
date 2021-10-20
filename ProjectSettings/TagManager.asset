@@ -7,6 +7,8 @@ TagManager:
   - Item
   - Resource
   - ScriptHolder
+  - WorldButton
+  - Damage Player
   layers:
   - Default
   - TransparentFX
@@ -17,7 +19,7 @@ TagManager:
   - Item
   - ItemCheck
   - Particles
-  - 
+  - Island
   - 
   - 
   - 

@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: CopperWire
   m_EditorClassIdentifier: 
   inputs:
-  - item: {fileID: 11400000, guid: c8dbf5dd1f4b19444a9bf9438009cb5b, type: 2}
-    amount: 1
-  replacedItems: []
-  output:
-    item: {fileID: 11400000, guid: 765505fe2e725634cbf27b08c111fb89, type: 2}
-    amount: 2
+  - {fileID: 11400000, guid: c8dbf5dd1f4b19444a9bf9438009cb5b, type: 2}
+  amounts: 03000000
+  replacementItems: []
+  replacementItemAmounts: 
+  output: {fileID: 11400000, guid: 765505fe2e725634cbf27b08c111fb89, type: 2}
+  outputAmount: 4
   categories: 0200000004000000

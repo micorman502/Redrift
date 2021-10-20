@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53d39e7a4c9ac5a40b92a8a9a7ba92eb, type: 3}
+  m_Name: Grout
+  m_EditorClassIdentifier: 
+  prefab: {fileID: 513459022077670938, guid: c57e58c370855ea40bc96539946feec1, type: 3}
+  type: 4
+  id: 9
+  resourceItems:
+  - {fileID: 11400000, guid: de8ae7d39448b624eb7111ec5c2219a0, type: 2}
+  - {fileID: 11400000, guid: 50ee8909b487ecc40b59d452afd96f4d, type: 2}
+  - {fileID: 11400000, guid: 7594da2b096925a46a5c6e4fa578ae85, type: 2}
+  - {fileID: 11400000, guid: d332c4c202197f849af660fcbc44dc16, type: 2}
+  chances:
+  - 0.55
+  - 0.3
+  - 0.15
+  - 0.15
+  maxGathers: 15
+  gatherTime: 1.5
+  toughness: 1
+  infiniteGathers: 0

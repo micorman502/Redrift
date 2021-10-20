@@ -19,6 +19,9 @@ public class RecipeManager : MonoBehaviour {
 	public Recipe[] recipes;
 
 	public GameObject craftingRecipePrefab;
+	List<CraftingRecipe> craftingRecipes = new List<CraftingRecipe>();
+
+	bool createImmediateFreeRecipes;
 
 	void Awake() {
 		craftingScrollRect = craftingScrollRectTransform.GetComponent<ScrollRect>();
@@ -43,6 +46,16 @@ public class RecipeManager : MonoBehaviour {
 				tempSize.y = Mathf.Ceil(recipe.inputs.Length / 3f) * 100f;
 				rectTransform.sizeDelta = tempSize;
 				craftingScrollRect.verticalScrollbar.value = 1f;
+				if (createImmediateFreeRecipes)
+				{
+					CraftingRecipe cr = recipeObj.GetComponent<CraftingRecipe>();
+					cr.SetFreeRecipe(true);
+					craftingRecipes.Add(cr);
+				}
+				else
+				{
+					craftingRecipes.Add(recipeObj.GetComponent<CraftingRecipe>());
+				}
 			}
 			i++;
 		}
@@ -67,4 +80,18 @@ public class RecipeManager : MonoBehaviour {
 			obj.GetComponentsInChildren<Image>()[1].sprite = categoryIcons[i];
 		}
 	}
+
+	public void RemoveAllCraftingCosts () //called from inventory loadcreativemode
+    {
+		if (craftingRecipes.Count > 0)
+		{
+			foreach (CraftingRecipe craftingRecipe in craftingRecipes)
+			{
+				craftingRecipe.SetFreeRecipe(true);
+			}
+		} else
+        {
+			createImmediateFreeRecipes = true;
+        }
+    }
 }

@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91adea7c2cf48c44bab70182c5512d9d, type: 3}
   m_Name: Box
   m_EditorClassIdentifier: 
-  itemName: Box
+  itemName: Block
   itemDescription: 
   type: 2
+  subType: 0
   id: 13
   icon: {fileID: 21300000, guid: 4aad2866290c0224686e3f4d5c643e14, type: 3}
   prefab: {fileID: 1815630875089658, guid: e633e6caf448c4d4284f0c1fc395e14d, type: 3}
@@ -26,6 +27,7 @@ MonoBehaviour:
     type: 3}
   speed: 0
   gatherAmount: 0
+  toolToughness: 0
   power: 0
   fuel: 0
   smeltItem: {fileID: 0}

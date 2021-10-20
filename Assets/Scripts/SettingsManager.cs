@@ -109,7 +109,7 @@ public class SettingsManager : MonoBehaviour {
 	}
 
 	void ApplySettings() {
-		SetFOV(PlayerPrefs.GetFloat("Settings.FOV"));
+		SetFOV(Mathf.Clamp(PlayerPrefs.GetFloat("Settings.FOV"), 50f, 110f));
 		SetPostProcessing(PlayerPrefs.GetInt("Settings.PostProcessingEnabled") == 1);
 		SetVolume(PlayerPrefs.GetFloat("Settings.Volume"));
 		SetGraphics(PlayerPrefs.GetInt("Settings.Graphics"));
@@ -158,8 +158,7 @@ public class SettingsManager : MonoBehaviour {
 
 	public void SetMouseSensitivity(float n) {
 		if(!mainMenu) {
-			player.mouseSensitivityX = n;
-			player.mouseSensitivityY = n;
+			player.mouseSensitivity = n;
 		}
 		mouseSensitivityText.text = "Sensitivity: " + n.ToString("0.0");
 		PlayerPrefs.SetFloat("Settings.MouseSensitivity", n);
