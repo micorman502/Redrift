@@ -13,13 +13,16 @@ MonoBehaviour:
   m_Name: Radio
   m_EditorClassIdentifier: 
   inputs:
-  - {fileID: 11400000, guid: e605b7711cb22d140805767d6575e6ca, type: 2}
-  - {fileID: 11400000, guid: 221124a2341142445ac06a74d0443d60, type: 2}
-  - {fileID: 11400000, guid: 765505fe2e725634cbf27b08c111fb89, type: 2}
-  - {fileID: 11400000, guid: 38edbc86290680b43b4fb593b501534f, type: 2}
-  amounts: 01000000020000000200000001000000
-  replacementItems: []
-  replacementItemAmounts: 
-  output: {fileID: 11400000, guid: 6df297420a220e848b67020d3f2ebfcf, type: 2}
-  outputAmount: 1
+  - item: {fileID: 11400000, guid: e605b7711cb22d140805767d6575e6ca, type: 2}
+    amount: 3
+  - item: {fileID: 11400000, guid: 221124a2341142445ac06a74d0443d60, type: 2}
+    amount: 2
+  - item: {fileID: 11400000, guid: 765505fe2e725634cbf27b08c111fb89, type: 2}
+    amount: 1
+  - item: {fileID: 11400000, guid: 38edbc86290680b43b4fb593b501534f, type: 2}
+    amount: 1
+  replacedItems: []
+  output:
+    item: {fileID: 11400000, guid: 6df297420a220e848b67020d3f2ebfcf, type: 2}
+    amount: 1
   categories: 05000000

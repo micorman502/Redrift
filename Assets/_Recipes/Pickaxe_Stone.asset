@@ -13,11 +13,12 @@ MonoBehaviour:
   m_Name: Pickaxe_Stone
   m_EditorClassIdentifier: 
   inputs:
-  - {fileID: 11400000, guid: e605b7711cb22d140805767d6575e6ca, type: 2}
-  - {fileID: 11400000, guid: cb2b8f9de15633642b25d8a3e5609e34, type: 2}
-  amounts: 0200000002000000
-  replacementItems: []
-  replacementItemAmounts: 
-  output: {fileID: 11400000, guid: 3c29dfed7a7c42d4ca5332dc2fd39c83, type: 2}
-  outputAmount: 1
+  - item: {fileID: 11400000, guid: e605b7711cb22d140805767d6575e6ca, type: 2}
+    amount: 2
+  - item: {fileID: 11400000, guid: cb2b8f9de15633642b25d8a3e5609e34, type: 2}
+    amount: 2
+  replacedItems: []
+  output:
+    item: {fileID: 11400000, guid: 3c29dfed7a7c42d4ca5332dc2fd39c83, type: 2}
+    amount: 1
   categories: 03000000

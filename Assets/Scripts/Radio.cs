@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Radio : MonoBehaviour {
-
+public class Radio : MonoBehaviour, IItemSaveable {
+	[SerializeField] int saveID;
 	[SerializeField] GameObject slider;
 	[SerializeField] Vector2 sliderMinMax;
 	Animator anim;
@@ -87,5 +87,24 @@ public class Radio : MonoBehaviour {
 		foreach(Sound s in songs) {
 			s.source.Stop();
 		}
+	}
+	public void GetData(out ItemSaveData data, out ObjectSaveData objData, out bool dontSave)
+	{
+		ItemSaveData newData = new ItemSaveData();
+		ObjectSaveData newObjData = new ObjectSaveData(transform.position, transform.rotation, saveID);
+
+		newData.num = songNum;
+
+		data = newData;
+		objData = newObjData;
+		dontSave = false;
+	}
+
+	public void SetData(ItemSaveData data, ObjectSaveData objData)
+	{
+		transform.position = objData.position;
+		transform.rotation = objData.rotation;
+
+		SetSong(data.num);
 	}
 }

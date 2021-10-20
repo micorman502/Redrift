@@ -13,13 +13,16 @@ MonoBehaviour:
   m_Name: AutoSorter
   m_EditorClassIdentifier: 
   inputs:
-  - {fileID: 11400000, guid: e605b7711cb22d140805767d6575e6ca, type: 2}
-  - {fileID: 11400000, guid: cb2b8f9de15633642b25d8a3e5609e34, type: 2}
-  - {fileID: 11400000, guid: 765505fe2e725634cbf27b08c111fb89, type: 2}
-  - {fileID: 11400000, guid: 38edbc86290680b43b4fb593b501534f, type: 2}
-  amounts: 04000000010000000200000001000000
-  replacementItems: []
-  replacementItemAmounts: 
-  output: {fileID: 11400000, guid: d69245c7c4f4c414aa6ceba1829b57ce, type: 2}
-  outputAmount: 1
+  - item: {fileID: 11400000, guid: e605b7711cb22d140805767d6575e6ca, type: 2}
+    amount: 4
+  - item: {fileID: 11400000, guid: cb2b8f9de15633642b25d8a3e5609e34, type: 2}
+    amount: 2
+  - item: {fileID: 11400000, guid: 765505fe2e725634cbf27b08c111fb89, type: 2}
+    amount: 3
+  - item: {fileID: 11400000, guid: 38edbc86290680b43b4fb593b501534f, type: 2}
+    amount: 1
+  replacedItems: []
+  output:
+    item: {fileID: 11400000, guid: d69245c7c4f4c414aa6ceba1829b57ce, type: 2}
+    amount: 1
   categories: 04000000

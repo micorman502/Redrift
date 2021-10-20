@@ -74,8 +74,8 @@ GameObject:
   - component: {fileID: 95944399804229726}
   - component: {fileID: 64881493089317030}
   - component: {fileID: 114997810272158888}
-  - component: {fileID: 208198223858636464}
   - component: {fileID: 114641196230700224}
+  - component: {fileID: 208198223858636464}
   m_Layer: 0
   m_Name: Tree
   m_TagString: Resource
@@ -119,9 +119,12 @@ MeshRenderer:
   m_CastShadows: 2
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -147,6 +150,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!95 &95944399804229726
 Animator:
   serializedVersion: 3
@@ -176,9 +180,9 @@ MeshCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  serializedVersion: 3
+  serializedVersion: 4
   m_Convex: 0
-  m_CookingOptions: 14
+  m_CookingOptions: 30
   m_Mesh: {fileID: 4300000, guid: 825ed51f2396b49488628a2f58e077d7, type: 3}
 --- !u!114 &114997810272158888
 MonoBehaviour:
@@ -192,24 +196,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f79061d20a842d469809a664dac9635, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dontSave: 1
+  saveID: 9
   resource: {fileID: 11400000, guid: 704d728cff76bff459184853ac5af545, type: 2}
   health: 0
---- !u!208 &208198223858636464
-NavMeshObstacle:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1523322516565944}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 0.345, y: 0.345, z: 2.217}
-  m_MoveThreshold: 0.1
-  m_Carve: 1
-  m_CarveOnlyStationary: 1
-  m_Center: {x: 0, y: 0.06, z: 2.217}
-  m_TimeToStationary: 0.5
 --- !u!114 &114641196230700224
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -222,6 +212,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90f3a26e4f24ac24282450d83ca5d2e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  saveID: 9
   applePrefab: {fileID: 1219581920616964, guid: 8845b4c40068c4f449743d12ec1e3898,
     type: 3}
   appleSpawnLocations:
@@ -229,8 +220,25 @@ MonoBehaviour:
   - {fileID: 4816456050126412}
   - {fileID: 4035860026743536}
   appleSpawnChance: 0.5
+  handler: {fileID: 114997810272158888}
   apples: []
   spawnApples: 1
+--- !u!208 &208198223858636464
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1523322516565944}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 0.345, y: 0.45, z: 2.67}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0.06, z: 2.217}
+  m_TimeToStationary: 0.5
 --- !u!1 &1909412130795748
 GameObject:
   m_ObjectHideFlags: 0

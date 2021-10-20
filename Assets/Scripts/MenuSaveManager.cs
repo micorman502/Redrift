@@ -4,6 +4,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class MenuSaveManager : MonoBehaviour {
 
@@ -60,14 +61,12 @@ public class MenuSaveManager : MonoBehaviour {
 			int saveNum = i;
 			GameObject go = Instantiate(saveListItem, saveList.transform);
 			saveListItems.Add(go);
+			SaveListItem item = go.GetComponent<SaveListItem>();
 			string[] infoSplit = info[saveNum].Name.Split('.');
-			go.GetComponentInChildren<Text>().text = infoSplit[infoSplit.Length - 2];
-			go.GetComponent<Button>().onClick.AddListener(delegate { LoadSave(saveNum); });
-			Button confirmDeleteButton = go.transform.Find("ConfirmDeleteButton").GetComponent<Button>();
-			confirmDeleteButton.onClick.AddListener(delegate { DeleteSave(saveNum); });
+			item.Setup(infoSplit[infoSplit.Length - 2]);
+			item.GetLoadSaveButton().onClick.AddListener(delegate { LoadSave(saveNum); });
+			item.GetConfirmDeleteButton().onClick.AddListener(delegate { DeleteSave(saveNum); });
 		}
-
-		CreateNewSaveButton();
 	}
 
 	void ClearList() {
@@ -77,18 +76,6 @@ public class MenuSaveManager : MonoBehaviour {
 		DirectoryInfo dir = new DirectoryInfo(Application.persistentDataPath + "/saves");
 		info = dir.GetFiles("*.*");
 		saveListItems.Clear();
-	}
-
-	void CreateNewSaveButton() {
-		GameObject go = Instantiate(saveListItem, saveList.transform);
-		saveListItems.Add(go);
-		go.GetComponentInChildren<Text>().text = "New Save";
-		go.GetComponent<Button>().onClick.AddListener(delegate { OpenNewSaveMenu(); });
-		go.GetComponent<Image>().color = Color.Lerp(Color.green, Color.white, 0.5f);
-		Destroy(go.transform.Find("DeleteButton").gameObject);
-		RectTransform rt = go.transform.Find("SaveText").GetComponent<RectTransform>();
-		rt.offsetMin = Vector2.zero;
-		rt.offsetMax = Vector2.zero;
 	}
 
 	public void LoadSave(int saveNum) {

@@ -21,7 +21,7 @@ public class InventorySlot : MonoBehaviour {
 
 	int mode;
 
-	[HideInInspector] public int slotID;
+	[SerializeField] int slotID;
 	[HideInInspector] public Item currentItem;
 	[HideInInspector] public int stackCount;
 
@@ -29,21 +29,39 @@ public class InventorySlot : MonoBehaviour {
 
 	void Awake() {
 		anim = GetComponent<Animation>();
-		GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-		inventory = playerObj.GetComponent<Inventory>();
-		player = playerObj.GetComponent<PlayerController>();
+
+		SetHotbarSlotSelector(false);
 	}
 
-	public void SetItem(Item item, int _stackCount) {
-		if(!item) {
-			ClearItem();
+    void Start()
+    {
+		InventoryEvents.RequestInventorySlot(slotID);
+	}
+
+	public void SetHotbarSlotSelector (bool show)
+    {
+		if (selector)
+        {
+			if (show)
+            {
+				selector.SetActive(true);
+            } else
+            {
+				selector.SetActive(false);
+            }
+        }
+    }
+
+    public void SetItem(WorldItem item) {
+		if(!item.item) {
+			ClearSlot();
 			return;
 		}
 		icon.gameObject.SetActive(true);
-		icon.sprite = item.icon;
-		currentItem = item;
+		icon.sprite = item.item.icon;
+		currentItem = item.item;
 		slotImage.sprite = slotSprite;
-		stackCount = _stackCount;
+		stackCount = item.amount;
 		if(mode != 1) {
 			amountText.gameObject.SetActive(true);
 		}
@@ -54,7 +72,7 @@ public class InventorySlot : MonoBehaviour {
 		anim.Play();
 	}
 
-	public void IncreaseItem(int count) {
+	/*public void IncreaseItem(int count) {
 		if(mode != 1) {
 			stackCount += count;
 			amountText.text = stackCount.ToString();
@@ -71,9 +89,9 @@ public class InventorySlot : MonoBehaviour {
 			}
 		}
 		anim.Play();
-	}
+	}*/
 
-	public void ClearItem() {
+	public void ClearSlot() {
 		icon.sprite = null;
 		icon.gameObject.SetActive(false);
 		currentItem = null;
@@ -82,15 +100,15 @@ public class InventorySlot : MonoBehaviour {
 		amountText.gameObject.SetActive(false);
 	}
 
-	public void OnItemClick() {
+	/*public void OnItemClick() {
 		if(currentItem && !player.ActiveSystemMenu() && !player.dead) {
 			if(currentItem.type == Item.ItemType.Structure) {
 				PlaceItem(currentItem);
 			} else {
 				DropItem();
 			}
-		}
-	}
+		} COME BACK
+	}*/
 	/*
 	public void OnInventoryClose() {
 		if(transform.parent.name != "Hotbar") {
@@ -99,46 +117,41 @@ public class InventorySlot : MonoBehaviour {
 	}
 	*/
 	public void OnItemPointerEnter() {
-		inventory.SetHoveredItem(currentItem, this);
+		InventoryEvents.SetHoveredItem(currentItem, this);
 	}
 
 	public void OnItemPointerExit() {
-		inventory.LeaveHoveredItem();
+		InventoryEvents.LeaveHoveredItem();
 	}
 
-	public void OnItemBeginDrag() {
-		inventory.BeginDrag(this);
-	}
-
-	public void OnItemEndDrag() {
-		inventory.EndDrag();
-	}
-
-	void DropItem() {
-		inventory.DropItem(currentItem, 1);
-		if(mode != 1) {
-			stackCount--;
-			amountText.text = stackCount.ToString();
-			if(stackCount <= 0) {
-				ClearItem();
-			}
-			inventory.InventoryUpdate();
-		}
-	}
-
-	public void PlaceItem(Item item) {
-		inventory.Place(item);
-		if(mode != 1) {
-			stackCount--;
-			amountText.text = stackCount.ToString();
-			if(stackCount <= 0) {
-				ClearItem();
-			}
-		}
-	}
 
 	public void LoadCreativeMode() {
 		mode = 1;
 		amountText.gameObject.SetActive(false);
 	}
+
+	public void PlayAnim ()
+    {
+		anim.Play();
+    }
+
+	public void SetSlotID (int id)
+    {
+		slotID = id;
+    }
+
+	public int GetSlotID ()
+    {
+		return slotID;
+    }
+
+	public void StartDrag ()
+    {
+		InventoryEvents.StartDrag(this);
+    }
+
+	public void EndDrag ()
+    {
+		InventoryEvents.EndDrag(this);
+    }
 }

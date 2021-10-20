@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class LightItem : MonoBehaviour {
+public class LightItem : MonoBehaviour, IItemSaveable {
 
+	[SerializeField] int saveID;
 	public float[] intensities = { 0f, 0.25f, 0.5f, 1f };
 	public int intensityNum = 0;
 
@@ -53,5 +54,25 @@ public class LightItem : MonoBehaviour {
 
 	void UpdateIntensity() {
 		light.intensity = intensities[intensityNum];
+	}
+
+	public void GetData(out ItemSaveData data, out ObjectSaveData objData, out bool dontSave)
+	{
+		ItemSaveData newData = new ItemSaveData();
+		ObjectSaveData newObjData = new ObjectSaveData(transform.position, transform.rotation, saveID);
+
+		newData.num = intensityNum;
+
+		data = newData;
+		objData = newObjData;
+		dontSave = false;
+	}
+
+	public void SetData(ItemSaveData data, ObjectSaveData objData)
+	{
+		transform.position = objData.position;
+		transform.rotation = objData.rotation;
+
+		SetIntensity(data.num);
 	}
 }

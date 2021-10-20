@@ -5,28 +5,19 @@ using UnityEngine.UI;
 
 public class Inventory : MonoBehaviour {
 
+	[SerializeField] int hotbarSize;
 	[SerializeField] GameObject placementParticleSystem;
-	[SerializeField] GameObject slotPrefab;
 
 	public GameObject inventoryContainer;
 	public Transform craftingRecipeContainer;
 	[SerializeField] GameObject craftingContainer;
 
-	public GameObject tooltip;
-	public Vector3 tooltipOffset;
-	public Text tooltipTitle;
-	public Text tooltipDesc;
-	RectTransform tooltipTransform;
+	[SerializeField] HeldItem[] heldItems;
 
-	public Transform[] slotHolders;
-	[SerializeField] Transform inventorySlotsContainer;
-	public Transform hotbar;
-
-	public List<InventorySlot> slots = new List<InventorySlot>();
+	[SerializeField] WorldItem[] items;
 
 	PlayerController player;
 
-	AchievementManager achievementManager;
 	AudioManager audioManager;
 
 	[HideInInspector] public bool placingStructure;
@@ -37,8 +28,7 @@ public class Inventory : MonoBehaviour {
 	public int selectedHotbarSlot = 0;
 	public Item currentSelectedItem;
 
-	InventorySlot currentHoveredSlot;
-	InventorySlot beginDragSlot;
+	InventorySlot firstDragSlot;
 
 	SaveManager saveManager;
 
@@ -48,57 +38,37 @@ public class Inventory : MonoBehaviour {
 	float gridY = 0.25f;
 	float gridZ = 1f;
 
-	int slotID = 0;
+	int heldItemIndex;
+	int previousHeldItemIndex = -1;
 
 	void Awake() {
 		audioManager = FindObjectOfType<AudioManager>();
-		achievementManager = FindObjectOfType<AchievementManager>();
 		saveManager = FindObjectOfType<SaveManager>();
-
-		tooltipTransform = tooltip.GetComponent<RectTransform>();
 
 		player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
 
-		foreach(Transform slotHolder in slotHolders) {
-			foreach(Transform slot in slotHolder) {
-				slots.Add(slot.GetComponent<InventorySlot>());
-				slot.GetComponent<InventorySlot>().slotID = slotID;
-				slotID++;
-			}
-		}
+		InventoryEvents.InitialiseInventoryUI(hotbarSize, items.Length);
+		InventoryEvents.StartDrag += (InventorySlot _slot) => { BeginDrag(_slot); };
+		InventoryEvents.EndDrag += (InventorySlot _slot) => { EndDrag(_slot); };
+		InventoryEvents.RequestInventorySlot += (int _index) => { RetrieveInventorySlotToEvent(_index); };
 	}
-	
-	public void LoadCreativeMode() {
+
+    private void OnDestroy()
+    {
+		InventoryEvents.StartDrag = (InventorySlot _slot) => { };
+		InventoryEvents.EndDrag = (InventorySlot _slot) => { };
+		InventoryEvents.RequestInventorySlot = (int _index) => { };
+	}
+
+    public void LoadCreativeMode() {
 		mode = 1;
 
-		// Add extra slots to the inventory so it can contain every item
-		int i = 0;
-		foreach(Transform slotHolder in slotHolders) {
-			foreach(Transform slot in slotHolder) {
-				i++;
-			}
-		}
-		if(i < saveManager.allItems.Length) {
-			for(int q = 0; q < saveManager.allItems.Length - i; q++) {
-				Instantiate(slotPrefab, inventorySlotsContainer);
-			}
-		}
-		Instantiate(slotPrefab, inventorySlotsContainer); // One extra empty slot for screenshots
 
-		foreach(Transform slotHolder in slotHolders) {
-			foreach(Transform slot in slotHolder) {
-				InventorySlot inventorySlot = slot.GetComponent<InventorySlot>();
-				if(!slots.Contains(inventorySlot)) {
-					slots.Add(inventorySlot);
-					slot.GetComponent<InventorySlot>().slotID = slotID;
-					slotID++;
-				}
-			}
-		}
+		items = new WorldItem[saveManager.allItems.Length + 1];
+
+		InventoryEvents.InitialiseInventoryUI(hotbarSize, items.Length);
 		AddAllItems();
-		foreach(InventorySlot slot in slots) {
-			slot.LoadCreativeMode();
-		}
+
 		craftingContainer.SetActive(false);
 	}
 
@@ -109,55 +79,26 @@ public class Inventory : MonoBehaviour {
 		Destroy(itemHandler.gameObject);
 	}
 
+	public void RetrieveInventorySlotToEvent (int index)
+    {
+		InventoryEvents.UpdateInventorySlot(items[index], index);
+    }
+
 	void Update() {
-		if(tooltip.activeSelf) {
-			tooltipTransform.position = Input.mousePosition + tooltipOffset;
-		}
 
-		if(Input.GetKeyDown(KeyCode.Tab)) {
-			inventoryContainer.SetActive(!inventoryContainer.activeSelf);
-			player.LockLook(inventoryContainer.activeSelf);
-			if(inventoryContainer.activeSelf) {
-				Cursor.lockState = CursorLockMode.None;
-				Cursor.visible = true;
-			} else {
-				Cursor.lockState = CursorLockMode.Locked;
-				Cursor.visible = false;
-				LeaveHoveredItem();
-				/*
-				foreach(InventorySlot slot in slots) {
-					slot.OnInventoryClose();
-				}
-				*/
-			}
-		}
-
-		for(int i = 1; i < hotbar.childCount + 1; i++) {
+		for(int i = 1; i < hotbarSize + 1; i++) {
 			if(Input.GetKeyDown("" + i)) {
 				if(selectedHotbarSlot != i - 1) {
-					selectedHotbarSlot = i - 1;
-					if(placingStructure) {
-						CancelStructurePlacement();
-					}
-					HotbarUpdate();
+					SetHotbarSlot(i - 1);
 				}
 			}
 		}
 
-		if((Input.GetAxisRaw("Mouse ScrollWheel") != 0 || Input.GetButtonDown("CycleRight") || Input.GetButtonDown("CycleLeft")) && !player.ActiveMenu()) {
-			if(placingStructure) {
-				CancelStructurePlacement();
-			}
+		if((Input.GetAxisRaw("Mouse ScrollWheel") != 0 || Input.GetButtonDown("CycleRight") || Input.GetButtonDown("CycleLeft")) && !player.InMenu()) {
 			if(Input.GetAxisRaw("Mouse ScrollWheel") > 0 || Input.GetButtonDown("CycleLeft")) {
-				selectedHotbarSlot--;
-				if(selectedHotbarSlot < 0) {
-					selectedHotbarSlot = hotbar.childCount - 1;
-				}
+				ScrollHotbar(-1);
 			} else {
-				selectedHotbarSlot++;
-				if(selectedHotbarSlot >= hotbar.childCount) {
-					selectedHotbarSlot = 0;
-				}
+				ScrollHotbar(1);
 			}
 
 			HotbarUpdate();
@@ -165,8 +106,8 @@ public class Inventory : MonoBehaviour {
 		}
 
 		if(!player.dead) {
-			if(placingStructure && !player.ActiveMenu()) {
-				player.ShowNoticeText("[LMB] to place, [RMB] to cancel, [R] to rotate");
+			if(placingStructure && !player.InMenu()) {
+				player.ShowTooltipText("[LMB] to place, [RMB] to cancel, [R] to rotate");
 				if(!currentPreviewObj.activeSelf) {
 					currentPreviewObj.SetActive(true);
 				}
@@ -209,49 +150,33 @@ public class Inventory : MonoBehaviour {
 				}
 
 				if(Input.GetMouseButtonDown(0) || Input.GetAxisRaw("ControllerTriggers") <= -0.1f) {
-					GameObject go = Instantiate(currentPlacingItem.prefab, currentPreviewObj.transform.position, currentPreviewObj.transform.rotation);
-					GameObject psgo = Instantiate(placementParticleSystem, go.transform);
-					MeshRenderer mr = go.GetComponent<MeshRenderer>();
-					if(!mr) {
-						mr = go.GetComponentInChildren<MeshRenderer>();
-					}
-					if(mr) {
-						ParticleSystem ps = psgo.GetComponent<ParticleSystem>();
-						ParticleSystem.ShapeModule shape = ps.shape;
-						shape.meshRenderer = mr;
-						ps.Play();
-					}
-					audioManager.Play("Build");
-					currentPlacingRot = 0;
-					RemovePlace();
-					InventoryUpdate();
-					player.HideNoticeText();
+					PlaceBuilding();
 				} else if(Input.GetMouseButtonDown(1) || Input.GetAxisRaw("ControllerTriggers") >= 0.1f) {
-					CancelStructurePlacement();
+					StopBuilding();
 				}
 			}
-			if(currentSelectedItem && !player.ActiveMenu()) {
+			if(currentSelectedItem && !player.InMenu()) {
 				if(Input.GetMouseButtonDown(0) || Input.GetAxisRaw("ControllerTriggers") <= -0.1f) {
 					if(currentSelectedItem.type == Item.ItemType.Structure && !placingStructure) {
-						hotbar.GetChild(selectedHotbarSlot).GetComponent<InventorySlot>().PlaceItem(currentSelectedItem);
+						StartBuilding(currentSelectedItem);
 					} else if(currentSelectedItem.type == Item.ItemType.Food) {
-						player.Consume(currentSelectedItem);
-						hotbar.GetChild(selectedHotbarSlot).GetComponent<InventorySlot>().DecreaseItem(1);
+						Item selected = currentSelectedItem;
+						if (RemoveItem(currentSelectedItem))
+						{
+							player.Consume(selected);
+						}
 					}
 
 					InventoryUpdate();
 				} else if(Input.GetButtonDown("Drop") && currentSelectedItem.type != Item.ItemType.Structure) {
 					if(Input.GetButton("Supersize")) {
-						InventorySlot slot = hotbar.GetChild(selectedHotbarSlot).GetComponent<InventorySlot>();
 						if(mode != 1) {
-							DropItem(currentSelectedItem, Ping(5, slot.stackCount));
-							slot.DecreaseItem(Ping(5, slot.stackCount));
+							DropItem(currentSelectedItem, Ping(5, items[selectedHotbarSlot].amount));
 						} else {
 							DropItem(currentSelectedItem, 5);
 						}
 					} else {
 						DropItem(currentSelectedItem, 1);
-						hotbar.GetChild(selectedHotbarSlot).GetComponent<InventorySlot>().DecreaseItem(1);
 					}
 
 					InventoryUpdate();
@@ -260,166 +185,252 @@ public class Inventory : MonoBehaviour {
 		}
 	}
 
+	void ScrollHotbar (int scrollAmt)
+    {
+		if (scrollAmt != 0)
+        {
+			SetHotbarSlot(selectedHotbarSlot + scrollAmt);
+        }
+	}
+
+	void SetHotbarSlot (int slot)
+    {
+		if (selectedHotbarSlot == slot)
+			return;
+		selectedHotbarSlot = slot;
+		if (selectedHotbarSlot < 0)
+		{
+			selectedHotbarSlot = hotbarSize - 1;
+		}
+		if (selectedHotbarSlot > hotbarSize - 1)
+		{
+			selectedHotbarSlot = 0;
+		}
+		HotbarUpdate();
+	}
+
 	void HotbarUpdate() {
-		for(int i = 0; i < hotbar.childCount; i++) {
-			GameObject selector = hotbar.GetChild(i).GetComponent<InventorySlot>().selector;
-			if(i == selectedHotbarSlot) {
-				selector.SetActive(true);
-			} else {
-				if(selector.activeSelf) {
-					selector.SetActive(false);
-				}
-			}
-		}
-		currentSelectedItem = hotbar.GetChild(selectedHotbarSlot).GetComponent<InventorySlot>().currentItem;
+		InventoryEvents.SetHotbarIndex(selectedHotbarSlot);
+		currentSelectedItem = items[selectedHotbarSlot].item;
+		EquipHeldItem(currentSelectedItem);
 		player.InventoryUpdate();
+		if (placingStructure)
+		{
+			StopBuilding();
+		}
 	}
 
-	public void SetHoveredItem(Item item, InventorySlot slot = null) {
-		audioManager.Play("UIClick");
-		if(item) {
-			if(!tooltip.activeSelf) {
-				tooltip.SetActive(true);
-			}
-			tooltipTitle.text = item.itemName;
-			if(string.IsNullOrEmpty(item.itemDescription)) {
-				if(item.type == Item.ItemType.Tool) {
-					tooltipDesc.text = "Speed: " + (item.speed).ToString();
-				} else if(item.smeltItem) {
-					tooltipDesc.text = "Smeltable " + item.type.ToString();
-				} else if(item.fuel > 0) {
-					tooltipDesc.text = "Burnable " + item.type.ToString();
-				} else {
-					tooltipDesc.text = item.type.ToString();
-				}
-			} else {
-				tooltipDesc.text = item.itemDescription;
-			}
+	void EquipHeldItem (Item _item)
+    {
+		for (int i = 0; i < heldItems.Length; i++)
+        {
+			if (heldItems[i].tempItem == _item) //COME BACK
+            {
+				EquipHeldItem(i);
+				return;
+            }
+        }
+		EquipHeldItem(-1);
+    }
+
+	void EquipHeldItem (int _index)
+    {
+		if (_index == previousHeldItemIndex)
+			return;
+		if (heldItems.Length == 0)
+			return;
+		heldItemIndex = _index;
+
+		if (previousHeldItemIndex != -1) //this order is important. It allows you to go from a building tool to a placeable item with issue
+		{
+			heldItems[previousHeldItemIndex].SetChildState(false);
+		}
+		previousHeldItemIndex = heldItemIndex;
+
+		if (_index != -1)
+		{
+			heldItems[_index].SetChildState(true);
 		}
 
-		currentHoveredSlot = slot;
-	}
+		/*heldItemIndex = _index;
+
+		if (_index > -1)
+		{
+			heldItems[heldItemIndex].itemGameObject.SetActive(true);
+		}
+
+		if (previousHeldItemIndex != -1)
+        {
+			heldItems[previousHeldItemIndex].itemGameObject.SetActive(false);
+        }
+
+		previousHeldItemIndex = heldItemIndex;*/
+    }
 
 	public void LeaveHoveredItem() {
-		if(tooltip.activeSelf) {
-			tooltip.SetActive(false);
-		}
-		if(currentHoveredSlot) {
-			currentHoveredSlot = null;
-		}
+		InventoryEvents.LeaveHoveredItem();
 	}
 
 	public void BeginDrag(InventorySlot slot) {
-		beginDragSlot = slot;
+		firstDragSlot = slot;
 	}
 
-	public void EndDrag() {
-		if(currentHoveredSlot) {
-			SwapItems(beginDragSlot, currentHoveredSlot);
+	public void EndDrag(InventorySlot slot) {
+		if (firstDragSlot)
+		{
+			SwapItems(firstDragSlot, slot);
 			InventoryUpdate();
+			firstDragSlot = null;
 		}
 	}
 
 	void SwapItems(InventorySlot slotA, InventorySlot slotB) {
-		Item itemA = slotA.currentItem;
-		Item itemB = slotB.currentItem;
-		int stackCountA = slotA.stackCount;
-		int stackCountB = slotB.stackCount;
+		Debug.Log("swapping");
+		int first = slotA.GetSlotID();
+		int second = slotB.GetSlotID();
+		WorldItem itemA = new WorldItem(items[first].item, items[first].amount);
+		WorldItem itemB = new WorldItem(items[second].item, items[second].amount);
 
-		slotA.SetItem(itemB, stackCountB);
-		slotB.SetItem(itemA, stackCountA);
+		items[first] = itemB;
+		items[second] = itemA;
+		InventoryEvents.UpdateInventorySlot(items[first], first);
+		InventoryEvents.UpdateInventorySlot(items[second], second);
+		InventoryUpdate();
+		HotbarUpdate();
 	}
 
-	public void CancelStructurePlacement() {
-		Destroy(currentPreviewObj);
-		currentPlacingRot = 0;
-		AddItem(currentPlacingItem, 1);
-		placingStructure = false;
-		currentPlacingItem = null;
-		currentPreviewObj = null;
-		player.HideNoticeText();
-	}
+	public void SetSlot (WorldItem item, int index)
+    {
+		items[index] = item;
+		InventoryEvents.UpdateInventorySlot(item, index);
+    }
+
+	public void AddItem (WorldItem item)
+    {
+		AddItem(item.item, item.amount);
+    }
 
 	public void AddItem(Item item, int amount) {
-		for(int q = 0; q < amount; q++) { // NOT SUSTAINABLE
-			bool full = true;
-
-			for(int i = 0; i < slots.Count; i++) {
-				InventorySlot inventorySlot = slots[i].GetComponent<InventorySlot>();
-				if(inventorySlot.currentItem) {
-					if(inventorySlot.currentItem.id == item.id) {
-						if(inventorySlot.stackCount < item.maxStackCount || mode == 1) {
-							inventorySlot.IncreaseItem(1);
-							full = false;
-							break;
-						}
-					}
-				}
-			}
-
-			if(full) {
-				for(int i = 0; i < slots.Count; i++) {
-					InventorySlot inventorySlot = slots[i].GetComponent<InventorySlot>();
-					if(!inventorySlot.currentItem) {
-						inventorySlot.SetItem(item, 1);
-						full = false;
+		if (!item || amount == 0)
+			return;
+		int amountLeft = amount;
+		for (int i = 0; i < items.Length; i++)
+		{
+			if (items[i].item == item || items[i].item == null)
+			{
+				items[i].item = item;
+				if (items[i].amount + amountLeft <= items[i].item.maxStackCount)
+				{
+					items[i].amount += amountLeft;
+					amountLeft = 0;
+					InventoryEvents.UpdateInventorySlot(items[i], i);
+					break;
+				} else
+                {
+					int removed = items[i].item.maxStackCount - items[i].amount;
+					amountLeft -= removed; 
+					items[i].amount = items[i].item.maxStackCount;
+					InventoryEvents.UpdateInventorySlot(items[i], i);
+					if (amountLeft == 0)
+                    {
 						break;
-					}
-				}
-			}
-
-			if(full) {
-				Debug.Log("Inventory Full");
-				if(mode != 1) {
-					DropItem(item, 1);
-				}
-			}
+                    }
+                }
+			} else
+            {// if the item is not the thing we are trying to add here
+				continue;
+            }
 		}
 
-		if(item.achievementNumber != -1) {
-			achievementManager.GetAchievement(item.achievementNumber);
+		if (amountLeft > 0)
+        {
+			SimpleDropItem(item, amountLeft);
+		}
+
+		if(amountLeft != amount) { //if items were actually taken
+			AchievementManager.Instance.GetAchievement(item.achievementNumber);
 		}
 
 		InventoryUpdate();
 	}
 
-	public void SetItem(Item item, int amount, int _slotID) {
-		foreach(InventorySlot slot in slots) {
-			if(slot.slotID == _slotID) {
-				if(amount == -1) {
-					slot.ClearItem();
-				} else {
-					slot.SetItem(item, amount);
-				}
-			}
-		}
+	public int RemoveItem(int index, int amount)
+	{
+		Item item = items[index].item;
+		return RemoveItem(item, amount);
 	}
 
-	/* Trying to make a better system
-		 * public void AddItem(Item item, int amount) {
-
-		bool full = true;
-
+	public int RemoveItem(Item item, int amount)
+	{
+		if (mode == 1)
+			return 0;
+		if (!item || amount == 0)
+			return amount;
 		int amountLeft = amount;
-
-		for(int i = 0; i < slots.Count; i++) {
-			InventorySlot inventorySlot = slots[i].GetComponent<InventorySlot>();
-			if(inventorySlot.currentItem) {
-				if(inventorySlot.currentItem.id == item.id) {
-					if(inventorySlot.stackCount < item.maxStackCount) {
-						Debug.Log((int)Mathf.PingPong(amount, item.maxStackCount - inventorySlot.stackCount));
-						int increaseAmount = (int)Mathf.PingPong(item.maxStackCount - inventorySlot.stackCount, amount);
-						amountLeft -= increaseAmount;
-						inventorySlot.IncreaseItem(increaseAmount);
-						full = false;
+		for (int i = 0; i < items.Length; i++)
+		{
+			if (items[i].item == item)
+			{
+				if (items[i].amount - amountLeft >= 0)
+				{
+					items[i].amount -= amountLeft;
+					amountLeft = 0;
+					if (items[i].amount == 0)
+                    {
+						items[i].Clear();
+                    }
+					InventoryEvents.UpdateInventorySlot(items[i], i);
+					break;
+				}
+				else
+				{
+					int removed = Mathf.Abs(items[i].amount - amountLeft);
+					amountLeft -= removed;
+					items[i].Clear();
+					InventoryEvents.UpdateInventorySlot(items[i], i);
+					if (amountLeft <= 0)
+					{
 						break;
 					}
 				}
 			}
+			else
+			{// if the item is not the thing we are trying to remove here
+				continue;
+			}
 		}
-		*/
 
-	public void DropItem(Item item, int amount) {
+		InventoryUpdate();
+
+		return amountLeft;
+	}
+
+	public bool RemoveItem(Item item)
+	{
+		if (RemoveItem(item, 1) == 1)
+        {
+			return false; //did not get removed
+        } else
+        {
+			return true; //did get removed
+        }
+	}
+
+	public void SetItem(WorldItem item, int index)
+    {
+		if (index > -1 && index < items.Length)
+		{
+			items[index] = item;
+			InventoryEvents.UpdateInventorySlot(item, index);
+		}
+	}
+
+	public void SetItem(Item item, int amount, int index) {
+		SetItem(new WorldItem(item, amount), index);
+	}
+
+
+	public void SimpleDropItem(Item item, int amount) { //drop item without removing anything
 		for(int i = 0; i < amount; i++) {
 			GameObject itemObj = Instantiate(item.prefab, player.playerCamera.transform.position + player.playerCamera.transform.forward * 1.25f + Vector3.up * i * (item.prefab.GetComponentInChildren<Renderer>().bounds.size.y + 0.1f), player.playerCamera.transform.rotation);
 			Rigidbody itemRB = itemObj.GetComponent<Rigidbody>();
@@ -427,9 +438,20 @@ public class Inventory : MonoBehaviour {
 				itemRB.velocity = player.rb.velocity;
 			}
 		}
+	}
 
-		//InventoryUpdate();
-		// InventoryUpdate is called in inventory slot now, to prevent duplication glich
+	public void DropItem(Item item, int amount)
+	{
+		amount -= RemoveItem(item, amount);
+		for (int i = 0; i < amount; i++)
+		{
+			GameObject itemObj = Instantiate(item.prefab, player.playerCamera.transform.position + player.playerCamera.transform.forward * 1.25f + Vector3.up * i * (item.prefab.GetComponentInChildren<Renderer>().bounds.size.y + 0.1f), player.playerCamera.transform.rotation);
+			Rigidbody itemRB = itemObj.GetComponent<Rigidbody>();
+			if (itemRB)
+			{
+				itemRB.velocity = player.rb.velocity;
+			}
+		}
 	}
 
 	int Ping(int num, int max) {
@@ -440,21 +462,45 @@ public class Inventory : MonoBehaviour {
 		}
 	}
 
-	void RemovePlace() { // Remove the current placing obj, and stop placing
+	void PlaceBuilding ()
+    {
+		RemoveItem(currentPlacingItem);
+		GameObject go = Instantiate(currentPlacingItem.prefab, currentPreviewObj.transform.position, currentPreviewObj.transform.rotation);
+		GameObject psgo = Instantiate(placementParticleSystem, go.transform);
+		MeshRenderer mr = go.GetComponent<MeshRenderer>();
+		if (!mr)
+		{
+			mr = go.GetComponentInChildren<MeshRenderer>();
+		}
+		if (mr)
+		{
+			ParticleSystem ps = psgo.GetComponent<ParticleSystem>();
+			ParticleSystem.ShapeModule shape = ps.shape;
+			shape.meshRenderer = mr;
+			ps.Play();
+		}
+		audioManager.Play("Build");
+		StopBuilding();
+		InventoryUpdate();
+	}
+
+	public void StopBuilding()
+	{
 		Destroy(currentPreviewObj);
+		currentPlacingRot = 0;
 		placingStructure = false;
 		currentPlacingItem = null;
 		currentPreviewObj = null;
+		player.HideTooltipText();
 	}
 
-	public void Place(Item item) {
-
+	public void StartBuilding(Item item) {
 		if(placingStructure) {
-			CancelStructurePlacement();
-			player.HideNoticeText();
+			StopBuilding();
+			player.HideTooltipText();
 		}
 
-		GameObject previewObj = Instantiate(item.previewPrefab, Vector3.up * -10000f, item.previewPrefab.transform.rotation) as GameObject;
+		GameObject previewObj = Instantiate(item.previewPrefab, Vector3.up * -10000f, item.previewPrefab.transform.rotation);
 		gridX = item.gridSize.x;
 		gridY = item.gridSize.y;
 		gridZ = item.gridSize.z;
@@ -469,18 +515,23 @@ public class Inventory : MonoBehaviour {
 		}
 	}
 
+	public WorldItem[] GetInventory ()
+    {
+		return items;
+    }
+
 	public bool CheckRecipe(Recipe recipe) {
 		if(player.ActiveSystemMenu()) {
 			return false;
 		}
 		int[] inputAmounts = new int[recipe.inputs.Length];
 
-		foreach(InventorySlot slot in slots) {
-			if(slot.currentItem) {
+		foreach(WorldItem invItem in items) {
+			if(invItem.item) {
 				int i = 0;
-				foreach(Item item in recipe.inputs) {
-					if(slot.currentItem == item) {
-						inputAmounts[i] += slot.stackCount;
+				foreach(WorldItem item in recipe.inputs) {
+					if(invItem.item == item.item) {
+						inputAmounts[i] += invItem.amount;
 						break;
 					}
 					i++;
@@ -490,7 +541,7 @@ public class Inventory : MonoBehaviour {
 
 		bool canCraft = true;
 		for(int i = 0; i < inputAmounts.Length; i++) {
-			if(!(inputAmounts[i] >= recipe.amounts[i])) {
+			if(!(inputAmounts[i] >= recipe.inputs[i].amount)) {
 				canCraft = false;
 			}
 		}
@@ -498,13 +549,14 @@ public class Inventory : MonoBehaviour {
 		return canCraft;
 	}
 
+	public WorldItem GetHeldItem ()
+    {
+		return items[selectedHotbarSlot];
+    }
+
 	public void ClearInventory() {
-		for(int i = 0; i < slots.Count; i++) {
-			InventorySlot inventorySlot = slots[i].GetComponent<InventorySlot>();
-			if(inventorySlot.currentItem) {
-				inventorySlot.ClearItem();
-				break;
-			}
+		for(int i = 0; i < items.Length; i++) {
+			items[i].Clear();
 		}
 
 		InventoryUpdate();
@@ -514,35 +566,38 @@ public class Inventory : MonoBehaviour {
 		
 		int[] inputAmounts = new int[recipe.inputs.Length];
 
-		foreach(InventorySlot slot in slots) {
-			if(slot.currentItem) { // If the inventory slot has an item in it
+		int o = 0; //COME BACK
+		foreach(WorldItem invItem in items) {
+			if(invItem.item) { // If the inventory slot has an item in it
 				int i = 0;
-				foreach(Item item in recipe.inputs) { // Loop through all the ingredients in the recipe to see if the slot's item is the same as one of them
-					if(slot.currentItem == item) { // Is the item the same?
-						int amountToDecrease = Mathf.Max(0, recipe.amounts[i] - inputAmounts[i]);
-						inputAmounts[i] += slot.stackCount; // Add the amount of that item to the inputAmounts
-						slot.DecreaseItem(amountToDecrease);
+				foreach(WorldItem item in recipe.inputs) { // Loop through all the ingredients in the recipe to see if the slot's item is the same as one of them
+					if(invItem.item == item.item) { // Is the item the same?
+						int amountToDecrease = Mathf.Max(0, item.amount - inputAmounts[i]);
+						inputAmounts[i] += invItem.amount; // Add the amount of that item to the inputAmounts
+						RemoveItem(o, amountToDecrease);
 						break;
 					}
 					i++;
 				}
 			}
+			o++;
 		}
 
-		AddItem(recipe.output, recipe.outputAmount);
+		AddItem(recipe.output);
 
 		int r = 0;
-		foreach(Item replacementItem in recipe.replacementItems) {
-			AddItem(replacementItem, recipe.replacementItemAmounts[r]);
+		foreach(WorldItem replacementItem in recipe.replacedItems) {
+			AddItem(replacementItem);
 			r++;
 		}
 	}
 
 	public void InventoryUpdate() {
-		currentSelectedItem = hotbar.GetChild(selectedHotbarSlot).GetComponent<InventorySlot>().currentItem;
+		currentSelectedItem = items[selectedHotbarSlot].item;
 		player.InventoryUpdate();
 		foreach(Transform craftingRecipeObj in craftingRecipeContainer) {
-			craftingRecipeObj.GetComponent<CraftingRecipe>().InventoryUpdate();
+			craftingRecipeObj.GetComponent<RecipeListItem>().InventoryUpdate();
 		}
 	}
+
 }

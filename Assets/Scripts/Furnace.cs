@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Furnace : MonoBehaviour {
+public class Furnace : MonoBehaviour, IItemSaveable, IGetTriggerInfo {
 
-	public TellParent tellParent;
+	[SerializeField] int saveID;
 
 	public GameObject fireLight;
 	public ParticleSystem smoke;
@@ -13,55 +13,56 @@ public class Furnace : MonoBehaviour {
 	[HideInInspector] public float fuel = 0;
 	[HideInInspector] public Item currentSmeltingItem;
 
-	[HideInInspector] public float finishTime;
 	public float smeltTime = 10f;
-	
-	void Update() {
-		if(tellParent.currentColliders.Count > 0) {
-			foreach(Collider col in tellParent.currentColliders) {
-				if(col && col.CompareTag("Item")) {
-					ItemHandler itemHandler = col.GetComponent<ItemHandler>();
-					if(itemHandler) {
-						if(itemHandler.item.type == Item.ItemType.Resource && itemHandler.item.fuel > 0) {
-							Destroy(itemHandler.gameObject);
-							fuel += itemHandler.item.fuel;
-						} else if(itemHandler.item.type == Item.ItemType.Resource && itemHandler.item.smeltItem && !currentSmeltingItem && fuel > 0) {
-							StartSmelting(itemHandler.item);
-							Destroy(itemHandler.gameObject);
-						}
-					}
-				}
-			}
-		}
-		if(fuel > 0 && currentSmeltingItem && Time.time >= finishTime) {
-			DropItem(currentSmeltingItem.smeltItem);
-			fuel--;
-			StopSmelting();
-		} else if(fuel < 0 && currentSmeltingItem) { // Not necessary unless fuel goes down on a timer
-			DropItem(currentSmeltingItem);
-			StopSmelting();
-		}
-	}
 
-	void OnTriggerStay(Collider other) {
-		if(other.CompareTag("Item")) {
-			ItemHandler itemHandler = other.GetComponent<ItemHandler>();
-			if(itemHandler.item.type == Item.ItemType.Resource && itemHandler.item.fuel > 0) {
+	public void GetTriggerInfo (Collider col)
+    {
+		if (col.CompareTag("Item"))
+		{
+			ItemHandler itemHandler = col.GetComponent<ItemHandler>();
+			if (!itemHandler)
+				return;
+			if (itemHandler.item.type == Item.ItemType.Resource && itemHandler.item.fuel > 0)
+			{
 				Destroy(itemHandler.gameObject);
 				fuel += itemHandler.item.fuel;
-			} else if(itemHandler.item.type == Item.ItemType.Resource && itemHandler.item.smeltItem && !currentSmeltingItem && fuel > 0) {
-				StartSmelting(itemHandler.item);
+			}
+			else if (itemHandler.item.type == Item.ItemType.Resource && itemHandler.item.smeltItem && !currentSmeltingItem && fuel > 0)
+			{
+				currentSmeltingItem = itemHandler.item;
 				Destroy(itemHandler.gameObject);
+				Check();
 			}
 		}
 	}
 
+	public void GetTriggerInfoRepeating (Collider col)
+    {
+		GetTriggerInfo(col);
+    }
+
+	void Check ()
+    {
+		if (currentSmeltingItem && fuel >= 1)
+        {
+			StartSmelting(currentSmeltingItem);
+        }
+    }
+
 	void StartSmelting(Item item) {
-		finishTime = Time.time + smeltTime;
+		//finishTime = Time.time + smeltTime;
 		currentSmeltingItem = item;
 		smoke.Play();
 		fire.Play();
 		fireLight.SetActive(true);
+		Invoke("FinishSmelting", smeltTime);
+	}
+
+	void FinishSmelting ()
+    {
+		DropItem(currentSmeltingItem.smeltItem);
+		fuel--;
+		StopSmelting();
 	}
 
 	void StopSmelting() {
@@ -77,5 +78,37 @@ public class Furnace : MonoBehaviour {
 		if(objRB) {
 			objRB.velocity = transform.forward;
 		}
+	}
+
+	public void GetData (out ItemSaveData data,out ObjectSaveData objData, out bool dontSave)
+    {
+		ItemSaveData newData = new ItemSaveData();
+		ObjectSaveData newObjData = new ObjectSaveData(transform.position, transform.rotation, saveID);
+
+		newData.floatVal = fuel;
+		if (currentSmeltingItem)
+		{
+			newData.itemID = currentSmeltingItem.id;
+		}
+		else
+		{
+			newData.itemID = -1;
+		}
+
+		data = newData;
+		objData = newObjData;
+		dontSave = false;
+    }
+
+	public void SetData (ItemSaveData data, ObjectSaveData objData)
+    {
+		transform.position = objData.position;
+		transform.rotation = objData.rotation;
+		fuel = data.floatVal;
+		if (data.itemID != -1)
+		{
+			currentSmeltingItem = SaveManager.Instance.FindItem(data.itemID);
+		}
+		Check();
 	}
 }

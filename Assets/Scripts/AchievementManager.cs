@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class AchievementManager : MonoBehaviour {
 
+	public static AchievementManager Instance;
 	public Transform achievementContainer;
 	public Transform acievementList;
 	public GameObject achievementPrefab;
@@ -16,6 +17,12 @@ public class AchievementManager : MonoBehaviour {
 	PlayerController player;
 
 	void Awake() {
+		if (Instance)
+        {
+			Destroy(this);
+			return;
+        }
+		Instance = this;
 		player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
 
 		hasAchievements = new bool[achievements.Length];
@@ -65,6 +72,8 @@ public class AchievementManager : MonoBehaviour {
 	}
 
 	public void GetAchievement(int _achievementID) {
+		if (_achievementID <= -1)
+			return;
 		if(!hasAchievements[_achievementID]) {
 			ShowAchievement(_achievementID);
 

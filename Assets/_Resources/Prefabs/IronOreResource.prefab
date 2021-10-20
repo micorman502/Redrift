@@ -55,9 +55,12 @@ MeshRenderer:
   m_CastShadows: 2
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -83,6 +86,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!95 &95435628683722432
 Animator:
   serializedVersion: 3
@@ -114,6 +118,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f79061d20a842d469809a664dac9635, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dontSave: 0
+  saveID: 7
   resource: {fileID: 11400000, guid: 398b2d55c5b81ea40b6f5c8a7879a039, type: 2}
   health: 0
 --- !u!64 &64903061275180738
@@ -126,9 +132,9 @@ MeshCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  serializedVersion: 3
+  serializedVersion: 4
   m_Convex: 0
-  m_CookingOptions: 14
+  m_CookingOptions: 30
   m_Mesh: {fileID: 4300000, guid: 4567bda37433bba489520ffe125b5907, type: 3}
 --- !u!208 &208973992265646454
 NavMeshObstacle:

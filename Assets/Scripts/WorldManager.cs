@@ -24,8 +24,6 @@ public class WorldManager : MonoBehaviour {
 	public int[] amountsMax;
 	public float[] spawnTimes;
 
-	public HiveMind hive;
-
 	float[] nextSpawnTime;
 
 	public float smallIslandSpawnTime = 60f;
@@ -78,7 +76,7 @@ public class WorldManager : MonoBehaviour {
 						GameObject obj = Instantiate(spawns[i], hit.point, Quaternion.LookRotation(hit.normal)) as GameObject;
 						ResourceHandler handler = obj.GetComponent<ResourceHandler>();
 						if(handler) {
-							hive.AddResource(handler);
+							HiveMind.Instance.AddResource(handler);
 						}
 						obj.transform.Rotate(Vector3.forward * Random.Range(0f, 360f));
 					} else {
@@ -113,7 +111,7 @@ public class WorldManager : MonoBehaviour {
 				if(Physics.Raycast(pos, Vector3.down, out hit, Mathf.Infinity, -1)) {
 					if(hit.collider.gameObject == world) {
 						GameObject obj = Instantiate(spawns[i], hit.point, Quaternion.LookRotation(hit.normal)) as GameObject;
-						hive.AddResource(obj.GetComponent<ResourceHandler>());
+						HiveMind.Instance.AddResource(obj.GetComponent<ResourceHandler>());
 						obj.transform.Rotate(Vector3.forward * Random.Range(0f, 360f));
 					} else {
 						continue;

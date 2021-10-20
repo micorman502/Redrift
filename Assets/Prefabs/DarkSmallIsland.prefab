@@ -55,9 +55,12 @@ MeshRenderer:
   m_CastShadows: 2
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -83,6 +86,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!95 &95311307493889400
 Animator:
   serializedVersion: 3
@@ -112,9 +116,9 @@ MeshCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  serializedVersion: 3
+  serializedVersion: 4
   m_Convex: 0
-  m_CookingOptions: 14
+  m_CookingOptions: 30
   m_Mesh: {fileID: 4300000, guid: 18d4a2aa1675da84da23216aa1fd0bf4, type: 3}
 --- !u!114 &114396419372128288
 MonoBehaviour:
@@ -128,6 +132,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f79061d20a842d469809a664dac9635, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dontSave: 1
+  saveID: 0
   resource: {fileID: 11400000, guid: 85888302b409fcd4699b0f611b370231, type: 2}
   health: 0
 --- !u!114 &114402908044126568
@@ -142,5 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5360b57439f563345af97bc249d9d1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  saveID: 11
   moveAmount: {x: 0, y: 0, z: 1}
-  speed: 1
+  minSpeed: 0.35
+  maxSpeed: 0.8

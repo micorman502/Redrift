@@ -9,14 +9,15 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4764269145070618}
+  - component: {fileID: 114488518309744100}
   - component: {fileID: 33401305403011144}
   - component: {fileID: 23790322914965246}
   - component: {fileID: 95733206651199906}
   - component: {fileID: 54052297217757744}
-  - component: {fileID: 114488518309744100}
   - component: {fileID: 114073347454411266}
   - component: {fileID: 65480651534274052}
-  m_Layer: 0
+  - component: {fileID: 6414670915133513229}
+  m_Layer: 6
   m_Name: CopperWire
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -37,6 +38,21 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &114488518309744100
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1457916337116984}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4b5061345d984446a05c9ab240db0da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  item: {fileID: 11400000, guid: 765505fe2e725634cbf27b08c111fb89, type: 2}
+  saveID: 19
+  dontSave: 0
 --- !u!33 &33401305403011144
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -56,9 +72,12 @@ MeshRenderer:
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -84,6 +103,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!95 &95733206651199906
 Animator:
   serializedVersion: 3
@@ -119,19 +139,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 1
---- !u!114 &114488518309744100
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1457916337116984}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e4b5061345d984446a05c9ab240db0da, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  item: {fileID: 11400000, guid: 765505fe2e725634cbf27b08c111fb89, type: 2}
 --- !u!114 &114073347454411266
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -158,3 +165,22 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.4408, y: 0.44080013, z: 0.14000003}
   m_Center: {x: -5.684342e-16, y: 0, z: 0.04000001}
+--- !u!205 &6414670915133513229
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1457916337116984}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: 0.000000014901161, y: -0.00000011920929, z: 0.04000002}
+  m_Size: 0.4408003
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.010211073
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 23790322914965246}
+  m_Enabled: 1

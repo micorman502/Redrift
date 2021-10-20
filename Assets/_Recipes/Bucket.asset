@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: Bucket
   m_EditorClassIdentifier: 
   inputs:
-  - {fileID: 11400000, guid: 221124a2341142445ac06a74d0443d60, type: 2}
-  amounts: 04000000
-  replacementItems: []
-  replacementItemAmounts: 
-  output: {fileID: 11400000, guid: f02312205082cc746bf5976adce58d91, type: 2}
-  outputAmount: 1
+  - item: {fileID: 11400000, guid: 221124a2341142445ac06a74d0443d60, type: 2}
+    amount: 4
+  replacedItems: []
+  output:
+    item: {fileID: 11400000, guid: f02312205082cc746bf5976adce58d91, type: 2}
+    amount: 1
   categories: 02000000

@@ -13,11 +13,12 @@ MonoBehaviour:
   m_Name: ComputerChip
   m_EditorClassIdentifier: 
   inputs:
-  - {fileID: 11400000, guid: 765505fe2e725634cbf27b08c111fb89, type: 2}
-  - {fileID: 11400000, guid: f2812bf6142a15244bbc5eb86d78d4a2, type: 2}
-  amounts: 0200000001000000
-  replacementItems: []
-  replacementItemAmounts: 
-  output: {fileID: 11400000, guid: 38edbc86290680b43b4fb593b501534f, type: 2}
-  outputAmount: 1
+  - item: {fileID: 11400000, guid: 765505fe2e725634cbf27b08c111fb89, type: 2}
+    amount: 2
+  - item: {fileID: 11400000, guid: f2812bf6142a15244bbc5eb86d78d4a2, type: 2}
+    amount: 1
+  replacedItems: []
+  output:
+    item: {fileID: 11400000, guid: 38edbc86290680b43b4fb593b501534f, type: 2}
+    amount: 1
   categories: 0200000004000000

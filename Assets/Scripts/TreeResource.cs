@@ -2,20 +2,21 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TreeResource : MonoBehaviour {
-
+public class TreeResource : MonoBehaviour, IItemSaveable {
+	[SerializeField] int saveID;
 	public GameObject applePrefab;
 	public Transform[] appleSpawnLocations;
 
 	public float appleSpawnChance = 0.8f;
 
-	[HideInInspector] public List<GameObject> apples = new List<GameObject>();
+	[SerializeField] ResourceHandler handler;
 
-	bool isQuitting = false;
+	[HideInInspector] public List<GameObject> apples = new List<GameObject>();
 
 	[HideInInspector] public bool spawnApples = true;
 
 	void Start() {
+		Debug.Log("start");
 		if(spawnApples) {
 			foreach(Transform spawn in appleSpawnLocations) {
 				if(Random.Range(0f, 1f) < appleSpawnChance) {
@@ -37,5 +38,30 @@ public class TreeResource : MonoBehaviour {
 				Destroy(apple);
 			}
 		}
+	}
+
+	public void GetData(out ItemSaveData data, out ObjectSaveData objData, out bool dontSave)
+	{
+		ItemSaveData newData = new ItemSaveData();
+		ObjectSaveData newObjData = new ObjectSaveData(transform.position, transform.rotation, saveID);
+
+		newData.num = handler.health;
+		newData.boolVal = false;
+
+		data = newData;
+		objData = newObjData;
+		dontSave = false;
+	}
+
+	public void SetData(ItemSaveData data, ObjectSaveData objData)
+	{
+		transform.position = objData.position;
+		transform.rotation = objData.rotation;
+
+		spawnApples = data.boolVal;
+
+		handler.health = data.num;
+
+		Debug.Log("loaded");
 	}
 }

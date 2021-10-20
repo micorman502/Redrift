@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class AutoMiner : MonoBehaviour {
+public class AutoMiner : MonoBehaviour, IItemSaveable {
+
+	[SerializeField] int saveID;
 
 	NavMeshAgent agent;
 
@@ -166,6 +168,41 @@ public class AutoMiner : MonoBehaviour {
 		if(!hasItem) {
 			items.Add(item);
 			itemAmounts.Add(amount);
+		}
+	}
+
+	public void GetData(out ItemSaveData data, out ObjectSaveData objData, out bool dontSave)
+	{
+		ItemSaveData newData = new ItemSaveData();
+		ObjectSaveData newObjData = new ObjectSaveData(transform.position, transform.rotation, saveID);
+
+		newData.itemIDs =SaveManager.Instance.ItemsToIDs(items);
+		newData.itemAmounts = itemAmounts;
+		if (currentToolItem)
+		{
+			newData.itemID = currentToolItem.id;
+		}
+		else
+		{
+			newData.itemID = -1;
+		}
+
+		data = newData;
+		objData = newObjData;
+		dontSave = false;
+	}
+
+	public void SetData(ItemSaveData data, ObjectSaveData objData)
+	{
+		transform.position = objData.position;
+		transform.rotation = objData.rotation;
+
+
+		items = SaveManager.Instance.IDsToItems(data.itemIDs);
+		itemAmounts = data.itemAmounts;
+		if (data.itemID != -1)
+		{
+			SetTool(SaveManager.Instance.FindItem(data.itemID));
 		}
 	}
 }

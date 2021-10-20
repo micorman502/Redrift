@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ConveyorBelt : MonoBehaviour {
+public class ConveyorBelt : MonoBehaviour, IItemSaveable, IGetTriggerInfo {
 
-	public float[] speeds = { 0f, 0.25f, 0.5f, 1f, 2f, 4f, 8f };
+	[SerializeField] int saveID;
+	public float[] speeds = { 0f, 1f, 2f, 8f };
 	public int speedNum = 0;
 
 	bool active = false;
@@ -25,23 +26,25 @@ public class ConveyorBelt : MonoBehaviour {
 		UpdateSpeed();
 	}
 
-	void FixedUpdate() {
-		if(tellParent.currentColliders.Count > 0 && speeds[speedNum] != 0f) {
-			foreach(Collider col in tellParent.currentColliders) {
-				if(col) {
-					Rigidbody itemRB = col.GetComponent<Rigidbody>();
-					if(!itemRB) {
-						itemRB = col.GetComponentInParent<Rigidbody>();
-					}
-					if(itemRB) {
-						itemRB.velocity = (itemRB.velocity + transform.forward).normalized * speeds[speedNum];
-						//itemRB.AddForce((transform.forward * speeds[speedNum]) - Vector3.Project(itemRB.velocity - Vector3.one, transform.forward.normalized));
-						//itemRB.AddRelativeForce(transform.forward * speeds[speedNum] - itemRB.velocity); // TODO: PUT IN FIXEDUPDATE!!!
-					}
-				}
-			}
+	public void GetTriggerInfoRepeating (Collider col)
+    {
+		Rigidbody itemRB = col.GetComponent<Rigidbody>();
+		if (!itemRB)
+		{
+			itemRB = col.GetComponentInParent<Rigidbody>();
+		}
+		if (itemRB)
+		{
+			itemRB.velocity = (itemRB.velocity + transform.forward).normalized * speeds[speedNum];
+			//itemRB.AddForce((transform.forward * speeds[speedNum]) - Vector3.Project(itemRB.velocity - Vector3.one, transform.forward.normalized));
+			//itemRB.AddRelativeForce(transform.forward * speeds[speedNum] - itemRB.velocity); // TODO: PUT IN FIXEDUPDATE!!!
 		}
 	}
+
+	public void GetTriggerInfo (Collider col)
+    {
+		//dummy
+    }
 
 	public void SetSpeed(int speed) {
 		speedNum = speed;
@@ -86,5 +89,25 @@ public class ConveyorBelt : MonoBehaviour {
 	void UpdateSpeed() {
 		anim.SetFloat("Speed", speeds[speedNum]);
 		audio.pitch = 0.5f + speeds[speedNum] / 8f;
+	}
+
+	public void GetData(out ItemSaveData data, out ObjectSaveData objData, out bool dontSave)
+	{
+		ItemSaveData newData = new ItemSaveData();
+		ObjectSaveData newObjData = new ObjectSaveData(transform.position, transform.rotation, saveID);
+
+		newData.num = speedNum;
+
+		data = newData;
+		objData = newObjData;
+		dontSave = false;
+	}
+
+	public void SetData(ItemSaveData data, ObjectSaveData objData)
+	{
+		transform.position = objData.position;
+		transform.rotation = objData.rotation;
+
+		SetSpeed(data.num);
 	}
 }

@@ -23,8 +23,8 @@ MonoBehaviour:
   handScale: {x: 1, y: 1, z: 1}
   maxStackCount: 1
   previewPrefab: {fileID: 0}
-  speed: 4
-  gatherAmount: 3
+  speed: 3
+  gatherAmount: 2
   power: 0
   fuel: 0
   smeltItem: {fileID: 0}

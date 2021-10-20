@@ -5,9 +5,11 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 using UnityEngine.UI;
+using Newtonsoft.Json;
 
 public class SaveManager : MonoBehaviour {
-
+	public static SaveManager Instance;
+	public GameObject[] loadedObjects;
 	PersistentData persistentData;
 
 	[SerializeField] Animator canvasAnim;
@@ -20,11 +22,7 @@ public class SaveManager : MonoBehaviour {
 	Inventory inventory;
 	PlayerController player;
 
-	AchievementManager achievementManager;
-
 	WorldManager worldManager;
-
-	HiveMind hive;
 
 	public int difficulty;
 	public int mode;
@@ -36,11 +34,15 @@ public class SaveManager : MonoBehaviour {
 	float autoSaveTimer = 0f;
 
 	void Awake() {
-		hive = FindObjectOfType<HiveMind>();
+		if (Instance)
+        {
+			Destroy(this);
+			return;
+        }
+		Instance = this;
 		GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
 		worldManager = FindObjectOfType<WorldManager>();
 
-		achievementManager = FindObjectOfType<AchievementManager>();
 		inventory = playerObj.GetComponent<Inventory>();
 		player = playerObj.GetComponent<PlayerController>();
 		persistentData = FindObjectOfType<PersistentData>();
@@ -78,7 +80,7 @@ public class SaveManager : MonoBehaviour {
 		}
 	}
 
-	Item FindItem(int id) {
+	public Item FindItem(int id) {
 		foreach(Item item in allItems) {
 			if(item.id == id) {
 				return item;
@@ -88,7 +90,7 @@ public class SaveManager : MonoBehaviour {
 		return null;
 	}
 
-	List<Item> IDsToItems(List<int> IDs) {
+	public List<Item> IDsToItems(List<int> IDs) {
 		List<Item> items = new List<Item>();
 		foreach(int itemID in IDs) {
 			items.Add(FindItem(itemID));
@@ -96,7 +98,7 @@ public class SaveManager : MonoBehaviour {
 		return items;
 	}
 
-	List<int> ItemsToIDs(List<Item> items) {
+	public List<int> ItemsToIDs(List<Item> items) {
 		List<int> IDs = new List<int>();
 		foreach(Item item in items) {
 			IDs.Add(item.id);
@@ -112,99 +114,38 @@ public class SaveManager : MonoBehaviour {
 
 	public void LoadGame(int saveNum) {
 		CheckSaveDirectory();
-		if(File.Exists(Application.persistentDataPath + "/saves/" + info[saveNum].Name)) {
+		string path = Application.persistentDataPath + "/saves/" + info[saveNum].Name;
+		if (File.Exists(path)) {
 			ClearWorld();
 
-			BinaryFormatter bf = new BinaryFormatter();
-			FileStream file = File.Open(Application.persistentDataPath + "/saves/" + info[saveNum].Name, FileMode.Open);
-			Save save = (Save)bf.Deserialize(file);
-			file.Close();
+			Save save = JsonConvert.DeserializeObject<Save>(File.ReadAllText(path));
 
-			for(int i = 0; i < save.worldItemIDs.Count; i++) {
+			for (int i = 0; i < save.savedObjects.Count; i++)
+            {
+				ObjectSaveData newObjData = save.savedObjects[i];
+				ItemSaveData newData = save.savedObjectsInfo[i];
+				GameObject newObj = Instantiate(loadedObjects[newObjData.objectID], newObjData.position, newObjData.rotation);
+				IItemSaveable[] saveables = newObj.GetComponents<IItemSaveable>();
+				for (int s = 0; s < saveables.Length; s++)
+				{
+					saveables[s].SetData(newData, newObjData);
+				}
+            }
+
+			for (int i = 0; i < save.inventoryItems.Count; i++) {
 				foreach(Item item in allItems) {
-					if(item.id == save.worldItemIDs[i]) {
-						GameObject itemObj = Instantiate(item.prefab, save.worldItemPositions[i], save.worldItemRotations[i]) as GameObject;
-						if(!save.worldItemHasRigidbodies[i]) {
-							Rigidbody itemRB = itemObj.GetComponentInParent<Rigidbody>();
-							if(itemRB) {
-								Destroy(itemRB);
-							}
-						}
-						Furnace furnace = itemObj.GetComponent<Furnace>();
-						AutoMiner autoMiner = itemObj.GetComponent<AutoMiner>();
-						AutoSorter autoSorter = itemObj.GetComponent<AutoSorter>();
-						ConveyorBelt conveyerBelt = itemObj.GetComponent<ConveyorBelt>();
-						Radio radio = itemObj.GetComponent<Radio>();
-						LightItem li = itemObj.GetComponent<LightItem>();
-						if(furnace) {
-							furnace.fuel = save.itemSaveData[i].fuel;
-							if(save.itemSaveData[i].itemID != -1) {
-								furnace.currentSmeltingItem = FindItem(save.itemSaveData[i].itemID);
-								furnace.finishTime = furnace.smeltTime + Time.time;
-							}
-						}
-						if(autoMiner) {
-							autoMiner.items = IDsToItems(save.itemSaveData[i].itemIDs);
-							autoMiner.itemAmounts = save.itemSaveData[i].itemAmounts;
-							if(save.itemSaveData[i].itemID != -1) {
-								autoMiner.SetTool(FindItem(save.itemSaveData[i].itemID));
-							}
-						}
-						if(autoSorter) {
-							if(save.itemSaveData[i].itemID != -1) {
-								autoSorter.SetItem(FindItem(save.itemSaveData[i].itemID));
-							}
-						}
-						if(conveyerBelt) {
-							conveyerBelt.SetSpeed(save.itemSaveData[i].num);
-						}
-						if(radio) {
-							radio.SetSong(save.itemSaveData[i].num);
-						}
-						if(li) {
-							li.SetIntensity(save.itemSaveData[i].num);
-						}
+					if(item.id == save.inventoryItems[i].id) {
+						inventory.SetItem(item, save.inventoryItems[i].amount, i);
 					}
 				}
 			}
 
-			for(int i = 0; i < save.worldResourceIDs.Count; i++) {
-				foreach(Resource resource in allResources) {
-					if(resource.id == save.worldResourceIDs[i]) {
-						if(resource.prefab) {
-							GameObject resourceObj = Instantiate(resource.prefab, save.worldResourcePositions[i], save.worldResourceRotations[i]) as GameObject;
-							ResourceHandler handler = resourceObj.GetComponent<ResourceHandler>();
-							if(handler) {
-								hive.AddResource(handler);
-							}
-							resourceObj.GetComponent<ResourceHandler>().health = save.worldResourceHealths[i];
-							TreeResource tree = resourceObj.GetComponent<TreeResource>();
-							if(tree) {
-								tree.spawnApples = false;
-							}
-						}
-					}
-				}
-			}
 
-			for(int i = 0; i < save.inventoryItemIDs.Count; i++) {
-				foreach(Item item in allItems) {
-					if(item.id == save.inventoryItemIDs[i]) {
-						inventory.SetItem(item, save.inventoryItemAmounts[i], i);
-					}
-				}
-			}
-
-			foreach(Vector3 pos in save.smallIslandPositions) {
-				Instantiate(smallIslandPrefab, pos, smallIslandPrefab.transform.rotation);
-			}
-
-			player.transform.position = save.playerPosition;
-			player.transform.rotation = save.playerRotation;
+			player.transform.position = save.playerTransform.position;
+			player.transform.rotation = save.playerTransform.rotation;
 			player.hunger = save.playerHunger;
 			player.health = save.playerHealth;
-
-			if(save.playerDead) {
+			if (save.playerDead) {
 				player.Die();
 			} else {
 				if(save.worldType == 0) {
@@ -219,7 +160,7 @@ public class SaveManager : MonoBehaviour {
 			difficulty = save.difficulty;
 			mode = save.mode;
 
-			achievementManager.SetAchievements(save.achievementIDs);
+			AchievementManager.Instance.SetAchievements(save.achievementIDs);
 
 			inventory.InventoryUpdate();
 
@@ -234,15 +175,13 @@ public class SaveManager : MonoBehaviour {
 		CheckSaveDirectory();
 		Save save = CreateSave();
 
-		BinaryFormatter bf = new BinaryFormatter();
-		FileStream file;
+		string path;
 		if(persistentData.loadSave) {
-			file = File.Create(Application.persistentDataPath + "/saves/" + info[persistentData.saveToLoad].Name);
+			path = Application.persistentDataPath + "/saves/" + info[persistentData.saveToLoad].Name;
 		} else {
-			file = File.Create(Application.persistentDataPath + "/saves/" + persistentData.newSaveName + ".save");
+			path = Application.persistentDataPath + "/saves/" + persistentData.newSaveName + ".save";
 		}
-		bf.Serialize(file, save);
-		file.Close();
+		File.WriteAllText(path, JsonConvert.SerializeObject(save));
 
 		saveText.text = "Game saved at " + DateTime.Now.ToString("HH:mm MMMM dd, yyyy");
 	}
@@ -250,8 +189,7 @@ public class SaveManager : MonoBehaviour {
 	private Save CreateSave() {
 		Save save = new Save();
 
-		save.playerPosition = player.transform.position;
-		save.playerRotation = player.transform.rotation;
+		save.playerTransform = new ObjectSaveData(player.transform.position, player.transform.rotation, 0);
 		save.playerHealth = player.health;
 		save.playerHunger = player.hunger;
 		save.saveTime = DateTime.Now;
@@ -262,108 +200,24 @@ public class SaveManager : MonoBehaviour {
 			save.worldType = 1;
 		}
 
-		foreach(InventorySlot slot in inventory.slots) {
-			if(slot.currentItem) {
-				save.inventoryItemIDs.Add(slot.currentItem.id);
-				save.inventoryItemAmounts.Add(slot.stackCount);
+		foreach(WorldItem item in inventory.GetInventory()) {
+			if(item.item) {
+				save.inventoryItems.Add(item);
 			} else {
-				save.inventoryItemIDs.Add(-1);
-				save.inventoryItemAmounts.Add(-1);
+				save.inventoryItems.Add(new SerializedWorldItem(-1, -1));
 			}
 		}
 
-		List<ItemHandler> usedItemHandlers = new List<ItemHandler>();
-
-		foreach(GameObject itemObj in GameObject.FindGameObjectsWithTag("Item")) {
-			ItemHandler handler = itemObj.GetComponentInParent<ItemHandler>();
-			if(!usedItemHandlers.Contains(handler)) {
-				save.worldItemIDs.Add(handler.item.id);
-				// Saving Item Data
-				ItemSaveData itemSaveData = new ItemSaveData();
-				Furnace furnace = handler.GetComponent<Furnace>(); // Better way to do this would be to check item ids.
-				AutoMiner autoMiner = handler.GetComponent<AutoMiner>();
-				AutoSorter autoSorter = handler.GetComponent<AutoSorter>();
-				ConveyorBelt conveyerBelt = handler.GetComponent<ConveyorBelt>();
-				Radio radio = handler.GetComponent<Radio>();
-				LightItem li = handler.GetComponent<LightItem>();
-				if(furnace) {
-					itemSaveData.fuel = furnace.fuel;
-					if(furnace.currentSmeltingItem) {
-						itemSaveData.itemID = furnace.currentSmeltingItem.id;
-					} else {
-						itemSaveData.itemID = -1;
-					}
-				}
-				if(autoMiner) {
-					itemSaveData.itemIDs = ItemsToIDs(autoMiner.items);
-					itemSaveData.itemAmounts = autoMiner.itemAmounts;
-					if(autoMiner.currentToolItem) {
-						itemSaveData.itemID = autoMiner.currentToolItem.id;
-					} else {
-						itemSaveData.itemID = -1;
-					}
-				}
-				if(autoSorter) {
-					if(autoSorter.sortingItem) {
-						itemSaveData.itemID = autoSorter.sortingItem.id;
-					} else {
-						itemSaveData.itemID = -1;
-					}
-				}
-				if(conveyerBelt) {
-					itemSaveData.num = conveyerBelt.speedNum;
-				}
-				if(radio) {
-					itemSaveData.num = radio.songNum;
-				}
-				if(li) {
-					itemSaveData.num = li.intensityNum;
-				}
-				/*
-				if(handler.item.id == 26) { // Apple
-					apples.Add(handler.gameObject);
-					save.treeAssociation.Add(-1);
-				} else {
-					save.treeAssociation.Add(-2);
-				}
-				*/
-				
-				save.itemSaveData.Add(itemSaveData);
-				// Done saving item data
-				save.worldItemPositions.Add(itemObj.transform.position);
-				save.worldItemRotations.Add(itemObj.transform.rotation);
-				Rigidbody itemRB = itemObj.GetComponentInParent<Rigidbody>();
-				save.worldItemHasRigidbodies.Add(itemRB);
-				usedItemHandlers.Add(handler);
-			}
+		foreach (IItemSaveable saveable in FindInterfaces.Find<IItemSaveable>())
+        {
+			saveable.GetData(out ItemSaveData data, out ObjectSaveData objData, out bool dontSave);
+			if (dontSave || objData.objectID == -1)
+				continue;
+			save.savedObjects.Add(objData);
+			save.savedObjectsInfo.Add(data);
 		}
 
-		List<ResourceHandler> usedResourceHandlers = new List<ResourceHandler>();
-
-		foreach(GameObject resourceObj in GameObject.FindGameObjectsWithTag("Resource")) {
-			ResourceHandler handler = resourceObj.GetComponentInParent<ResourceHandler>();
-			if(!usedResourceHandlers.Contains(handler)) {
-				save.worldResourceIDs.Add(handler.resource.id);
-				save.worldResourcePositions.Add(resourceObj.transform.position);
-				save.worldResourceRotations.Add(resourceObj.transform.rotation);
-				save.worldResourceHealths.Add(handler.health);
-				/*
-				if(handler.resource.id == 5) { // Tree
-					TreeResource tr = handler.GetComponent<TreeResource>();
-					if(tr.apples.Count >= 1) {
-						// AHH DO NOT LET THE APPLES FALL OUT OF THE TREE
-					}
-				}
-				*/
-				usedResourceHandlers.Add(handler);
-			}
-		}
-
-		save.achievementIDs = achievementManager.ObtainedAchievements();
-
-		foreach(SmallIsland si in FindObjectsOfType<SmallIsland>()) {
-			save.smallIslandPositions.Add(si.transform.position);
-		}
+		save.achievementIDs = AchievementManager.Instance.ObtainedAchievements();
 
 		save.difficulty = difficulty;
 		save.mode = mode;
@@ -385,12 +239,8 @@ public class SaveManager : MonoBehaviour {
 				Destroy(resourceObj);
 			}
 		}
-
-		foreach(InventorySlot slot in inventory.slots) {
-			slot.ClearItem();
-		}
+		inventory.ClearInventory();
 	}
-
 }
 
 [System.Serializable]

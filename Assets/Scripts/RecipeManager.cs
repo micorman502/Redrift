@@ -32,14 +32,16 @@ public class RecipeManager : MonoBehaviour {
 	public void InitializeRecipes(Categories c) {
 		ClearRecipes();
 		int i = 0;
-		foreach(Recipe recipe in recipes) {
+		Inventory tempInv = GameObject.FindGameObjectWithTag("Player").GetComponent<Inventory>();
+		foreach (Recipe recipe in recipes) {
 			if(recipe.categories.Contains(c) || c == 0) {
-				GameObject recipeObj = Instantiate(craftingRecipePrefab, craftingRecipeContainer) as GameObject;
+				GameObject recipeObj = Instantiate(craftingRecipePrefab, craftingRecipeContainer);
+				recipeObj.GetComponent<RecipeListItem>().Setup(recipe, tempInv);
+
 				RectTransform rectTransform = recipeObj.GetComponent<RectTransform>();
 				Vector3 tempSize = rectTransform.sizeDelta;
 				tempSize.y = Mathf.Ceil(recipe.inputs.Length / 3f) * 100f;
 				rectTransform.sizeDelta = tempSize;
-				recipeObj.GetComponent<RecipeHandler>().recipe = recipes[i];
 				craftingScrollRect.verticalScrollbar.value = 1f;
 			}
 			i++;
@@ -48,7 +50,7 @@ public class RecipeManager : MonoBehaviour {
 
 	void ClearRecipes() {
 		foreach(Transform recipeTrans in craftingRecipeContainer) {
-			if(recipeTrans.GetComponent<RecipeHandler>()) {
+			if(recipeTrans.GetComponent<RecipeListItem>()) {
 				Destroy(recipeTrans.gameObject);
 			}
 		}

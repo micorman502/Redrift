@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4268926747541714}
   - component: {fileID: 33751259090988986}
   - component: {fileID: 23582313850803656}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: BucketPart_011
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -39,7 +39,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1000669023975508}
-  m_Mesh: {fileID: 4300002, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
+  m_Mesh: {fileID: -6932210491947317634, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
 --- !u!23 &23582313850803656
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -51,9 +51,12 @@ MeshRenderer:
   m_CastShadows: 2
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -78,6 +81,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &1036356571788150
 GameObject:
   m_ObjectHideFlags: 0
@@ -89,7 +93,7 @@ GameObject:
   - component: {fileID: 4646489246903554}
   - component: {fileID: 33988750542606268}
   - component: {fileID: 23087521517220694}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: BucketPart_012
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -117,7 +121,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1036356571788150}
-  m_Mesh: {fileID: 4300000, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
+  m_Mesh: {fileID: -1818341858359694545, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
 --- !u!23 &23087521517220694
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -129,9 +133,12 @@ MeshRenderer:
   m_CastShadows: 2
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -156,6 +163,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &1130314015801622
 GameObject:
   m_ObjectHideFlags: 0
@@ -167,7 +175,7 @@ GameObject:
   - component: {fileID: 4623013672695672}
   - component: {fileID: 33397859084853344}
   - component: {fileID: 23923743661028814}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: BucketPart_006
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -195,7 +203,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1130314015801622}
-  m_Mesh: {fileID: 4300012, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
+  m_Mesh: {fileID: -8718187308226015147, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
 --- !u!23 &23923743661028814
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -207,9 +215,12 @@ MeshRenderer:
   m_CastShadows: 2
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -234,6 +245,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &1149296002804152
 GameObject:
   m_ObjectHideFlags: 0
@@ -245,7 +257,7 @@ GameObject:
   - component: {fileID: 4410861666213478}
   - component: {fileID: 33527907707384816}
   - component: {fileID: 23629635097562744}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: BucketPart
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -285,9 +297,12 @@ MeshRenderer:
   m_CastShadows: 2
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -312,6 +327,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &1206123201504842
 GameObject:
   m_ObjectHideFlags: 0
@@ -323,7 +339,7 @@ GameObject:
   - component: {fileID: 4147960423367744}
   - component: {fileID: 33854003717133998}
   - component: {fileID: 23282767431915300}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: BucketPart_003
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -351,7 +367,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1206123201504842}
-  m_Mesh: {fileID: 4300018, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
+  m_Mesh: {fileID: -8749075075218288457, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
 --- !u!23 &23282767431915300
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -363,9 +379,12 @@ MeshRenderer:
   m_CastShadows: 2
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -390,6 +409,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &1221565183120678
 GameObject:
   m_ObjectHideFlags: 0
@@ -401,7 +421,7 @@ GameObject:
   - component: {fileID: 4490764684207970}
   - component: {fileID: 33848215875970250}
   - component: {fileID: 23978986030401926}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: BucketPart_009
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -429,7 +449,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1221565183120678}
-  m_Mesh: {fileID: 4300006, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
+  m_Mesh: {fileID: 1755721016078691883, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
 --- !u!23 &23978986030401926
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -441,9 +461,12 @@ MeshRenderer:
   m_CastShadows: 2
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -468,6 +491,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &1379351926922842
 GameObject:
   m_ObjectHideFlags: 0
@@ -479,7 +503,7 @@ GameObject:
   - component: {fileID: 4479385482277248}
   - component: {fileID: 33372625525282268}
   - component: {fileID: 23989316408013996}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: BucketPart_004
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -507,7 +531,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1379351926922842}
-  m_Mesh: {fileID: 4300016, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
+  m_Mesh: {fileID: -8560320898633542837, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
 --- !u!23 &23989316408013996
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -519,9 +543,12 @@ MeshRenderer:
   m_CastShadows: 2
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -546,6 +573,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &1450871126170730
 GameObject:
   m_ObjectHideFlags: 0
@@ -557,7 +585,7 @@ GameObject:
   - component: {fileID: 4017219339140154}
   - component: {fileID: 33488758164188768}
   - component: {fileID: 23347507827320880}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: BucketPart_008
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -585,7 +613,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1450871126170730}
-  m_Mesh: {fileID: 4300008, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
+  m_Mesh: {fileID: -6091884590447642581, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
 --- !u!23 &23347507827320880
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -597,9 +625,12 @@ MeshRenderer:
   m_CastShadows: 2
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -624,6 +655,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &1470836465496792
 GameObject:
   m_ObjectHideFlags: 0
@@ -635,7 +667,7 @@ GameObject:
   - component: {fileID: 4046858136435936}
   - component: {fileID: 33660504024764452}
   - component: {fileID: 23679243373124564}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: BucketPart_002
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -663,7 +695,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1470836465496792}
-  m_Mesh: {fileID: 4300020, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
+  m_Mesh: {fileID: -8551571831445359938, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
 --- !u!23 &23679243373124564
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -675,9 +707,12 @@ MeshRenderer:
   m_CastShadows: 2
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -702,6 +737,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &1551644089404962
 GameObject:
   m_ObjectHideFlags: 0
@@ -711,12 +747,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4945105838749350}
+  - component: {fileID: 114759545984055220}
   - component: {fileID: 95918393467946516}
   - component: {fileID: 54785724179044570}
-  - component: {fileID: 114759545984055220}
   - component: {fileID: 114995409896883404}
   - component: {fileID: 65170891985282408}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: WaterBucket
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -751,6 +787,21 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &114759545984055220
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1551644089404962}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4b5061345d984446a05c9ab240db0da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  item: {fileID: 11400000, guid: e1b3cb9db7e814741a512d371fb66ed3, type: 2}
+  saveID: 39
+  dontSave: 0
 --- !u!95 &95918393467946516
 Animator:
   serializedVersion: 3
@@ -786,19 +837,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 1
---- !u!114 &114759545984055220
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1551644089404962}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e4b5061345d984446a05c9ab240db0da, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  item: {fileID: 11400000, guid: e1b3cb9db7e814741a512d371fb66ed3, type: 2}
 --- !u!114 &114995409896883404
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -839,7 +877,7 @@ GameObject:
   - component: {fileID: 4679900370696110}
   - component: {fileID: 33639431613295454}
   - component: {fileID: 23402029533093004}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: BucketPart_007
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -867,7 +905,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1604939795287230}
-  m_Mesh: {fileID: 4300010, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
+  m_Mesh: {fileID: -5787780643521298143, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
 --- !u!23 &23402029533093004
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -879,9 +917,12 @@ MeshRenderer:
   m_CastShadows: 2
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -906,6 +947,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &1654716136994960
 GameObject:
   m_ObjectHideFlags: 0
@@ -917,7 +959,7 @@ GameObject:
   - component: {fileID: 4449479757965926}
   - component: {fileID: 33339914656064818}
   - component: {fileID: 23044910355392118}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: BucketPart_010
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -945,7 +987,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1654716136994960}
-  m_Mesh: {fileID: 4300004, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
+  m_Mesh: {fileID: -3721156945971837569, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
 --- !u!23 &23044910355392118
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -957,9 +999,12 @@ MeshRenderer:
   m_CastShadows: 2
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -984,6 +1029,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &1839078760630880
 GameObject:
   m_ObjectHideFlags: 0
@@ -995,7 +1041,7 @@ GameObject:
   - component: {fileID: 4930557283044094}
   - component: {fileID: 33592428177405122}
   - component: {fileID: 23830723304605678}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: BucketPart_001
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -1023,7 +1069,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1839078760630880}
-  m_Mesh: {fileID: 4300022, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
+  m_Mesh: {fileID: 2492054425596031327, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
 --- !u!23 &23830723304605678
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1035,9 +1081,12 @@ MeshRenderer:
   m_CastShadows: 2
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -1062,6 +1111,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &1852658286838652
 GameObject:
   m_ObjectHideFlags: 0
@@ -1073,7 +1123,7 @@ GameObject:
   - component: {fileID: 4505936889250204}
   - component: {fileID: 33120285772584952}
   - component: {fileID: 23790927287075198}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Water
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1113,9 +1163,12 @@ MeshRenderer:
   m_CastShadows: 2
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -1140,6 +1193,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &1886096794197512
 GameObject:
   m_ObjectHideFlags: 0
@@ -1151,7 +1205,7 @@ GameObject:
   - component: {fileID: 4731616040255076}
   - component: {fileID: 33874374565243674}
   - component: {fileID: 23471211571367494}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: BucketPart_005
   m_TagString: Item
   m_Icon: {fileID: 0}
@@ -1179,7 +1233,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1886096794197512}
-  m_Mesh: {fileID: 4300014, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
+  m_Mesh: {fileID: -8992870655772356769, guid: 42a8920ba84cfbb4ba61ca7da8b4ebc6, type: 3}
 --- !u!23 &23471211571367494
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1191,9 +1245,12 @@ MeshRenderer:
   m_CastShadows: 2
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -1218,3 +1275,4 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
